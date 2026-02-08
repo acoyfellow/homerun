@@ -1,0 +1,79 @@
+---
+title: How to scout a website
+description: Capture API endpoints from any site using the scout tool.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+## Basic scout
+
+```bash
+curl -X POST https://your-unsurf-url.workers.dev/tools/scout \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "task": "find the contact form and map how it submits"
+  }'
+```
+
+The `task` field guides the scout's exploration. Be specific about what you want to find.
+
+## Writing effective tasks
+
+Good tasks are specific and action-oriented:
+
+| ✅ Good | ❌ Bad |
+|---|---|
+| "find the contact form and map how it submits" | "explore the site" |
+| "navigate to the dashboard and capture all data-loading endpoints" | "find APIs" |
+| "add an item to cart and capture the checkout flow" | "test the store" |
+
+## Scouting authenticated sites
+
+If the target site requires authentication, pass cookies or headers:
+
+```json
+{
+  "url": "https://app.example.com/dashboard",
+  "task": "capture all data-loading endpoints on the dashboard",
+  "auth": {
+    "cookies": "session=abc123; token=xyz",
+    "headers": {
+      "Authorization": "Bearer your-token"
+    }
+  }
+}
+```
+
+<Aside type="caution">
+Auth tokens are stored temporarily in memory during the scout session and are not persisted to D1 or R2.
+</Aside>
+
+## Reading scout results
+
+The response includes:
+
+- **`siteId`** — use this to query endpoints later
+- **`endpointCount`** — total unique endpoints found
+- **`pathId`** — the navigation path taken, replayable by the worker
+- **`openApiSpec`** — complete OpenAPI 3.1 JSON
+
+## Retrieving the OpenAPI spec
+
+```bash
+curl https://your-unsurf-url.workers.dev/sites/{siteId}/openapi
+```
+
+This returns a valid OpenAPI 3.1 specification you can import into any tool that consumes OpenAPI — Postman, Swagger UI, `openapi-typescript`, etc.
+
+## Listing captured endpoints
+
+```bash
+curl https://your-unsurf-url.workers.dev/sites/{siteId}/endpoints
+```
+
+Each endpoint includes:
+- `method` and `pathPattern` — e.g., `GET /users/:id`
+- `requestSchema` — inferred JSON Schema for request body
+- `responseSchema` — inferred JSON Schema for response body
+- `sampleCount` — how many times this endpoint was observed

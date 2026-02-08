@@ -1,0 +1,35 @@
+---
+title: unsurf
+description: Turn any website into a typed API.
+template: splash
+hero:
+  title: |
+    <span class="hero-title">unsurf</span>
+  tagline: Turn any website into a typed API.
+  actions:
+    - text: Get started
+      link: /tutorial/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/acoyfellow/unsurf
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Scout" icon="magnifier">
+    An agent explores a site, captures every API call, and maps the endpoints with inferred schemas.
+  </Card>
+  <Card title="Worker" icon="rocket">
+    Replay captured API calls directly — no browser needed. Milliseconds, not seconds.
+  </Card>
+  <Card title="Heal" icon="heart">
+    Site changed? Path broken? Heal re-scouts, diffs, patches, and retries automatically.
+  </Card>
+  <Card title="Self-hosted" icon="setting">
+    Deploy to your own Cloudflare account. Your data stays yours. One click.
+  </Card>
+</CardGrid>

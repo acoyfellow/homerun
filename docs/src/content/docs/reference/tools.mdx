@@ -1,0 +1,151 @@
+---
+title: MCP Tools
+description: Complete reference for unsurf's scout, worker, and heal tools.
+---
+
+import SourceCode from '../../../components/SourceCode.astro';
+
+The API is defined in a single file using Effect's `HttpApi`:
+
+<SourceCode file="src/Api.ts" title="API definition" />
+
+---
+
+## scout
+
+Explore a website and capture its API endpoints.
+
+### Input
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `url` | `string` | ✅ | Target URL to scout |
+| `task` | `string` | ✅ | Natural language description of what to find |
+| `auth` | `object` | | Authentication config |
+| `auth.cookies` | `string` | | Cookie header value |
+| `auth.headers` | `Record<string, string>` | | Additional request headers |
+
+### Output
+
+| Field | Type | Description |
+|---|---|---|
+| `siteId` | `string` | Unique identifier for the scouted site |
+| `endpointCount` | `number` | Number of unique endpoints captured |
+| `pathId` | `string` | Replayable navigation path ID |
+| `openApiSpec` | `object` | OpenAPI 3.1 specification |
+
+### Errors
+
+| Error | When |
+|---|---|
+| `BrowserError` | Browser container failed to launch or crashed |
+| `NetworkError` | Target site unreachable |
+| `StoreError` | Failed to save results to D1/R2 |
+
+### MCP Schema
+
+```json
+{
+  "name": "scout",
+  "description": "Explore a website and capture its API endpoints",
+  "inputSchema": {
+    "type": "object",
+    "required": ["url", "task"],
+    "properties": {
+      "url": { "type": "string", "description": "Target URL to scout" },
+      "task": { "type": "string", "description": "What to find on the site" }
+    }
+  }
+}
+```
+
+---
+
+## worker
+
+Execute a scouted path or replay a captured API endpoint.
+
+### Input
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `pathId` | `string` | ✅ | ID of the path to execute |
+| `data` | `Record<string, unknown>` | | Data to pass to the endpoint |
+
+### Output
+
+| Field | Type | Description |
+|---|---|---|
+| `success` | `boolean` | Whether execution succeeded |
+| `response` | `unknown` | Response body from the target API |
+
+### Errors
+
+| Error | When |
+|---|---|
+| `NotFoundError` | Path ID does not exist |
+| `PathBrokenError` | Path is broken — target site changed |
+| `NetworkError` | Target API unreachable |
+| `BrowserError` | Browser fallback failed |
+
+### MCP Schema
+
+```json
+{
+  "name": "worker",
+  "description": "Execute a scouted path or replay a captured API endpoint",
+  "inputSchema": {
+    "type": "object",
+    "required": ["pathId"],
+    "properties": {
+      "pathId": { "type": "string", "description": "Path ID from a previous scout" },
+      "data": { "type": "object", "description": "Data to send to the endpoint" }
+    }
+  }
+}
+```
+
+---
+
+## heal
+
+Re-scout and repair a broken path.
+
+### Input
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `pathId` | `string` | ✅ | ID of the broken path |
+| `error` | `string` | | Description of what went wrong |
+
+### Output
+
+| Field | Type | Description |
+|---|---|---|
+| `healed` | `boolean` | Whether the path was successfully repaired |
+| `newPathId` | `string` | ID of the new path (if changed) |
+
+### Errors
+
+| Error | When |
+|---|---|
+| `NotFoundError` | Path ID does not exist |
+| `BrowserError` | Re-scout browser failed |
+| `NetworkError` | Target site unreachable |
+
+### MCP Schema
+
+```json
+{
+  "name": "heal",
+  "description": "Re-scout and repair a broken path",
+  "inputSchema": {
+    "type": "object",
+    "required": ["pathId"],
+    "properties": {
+      "pathId": { "type": "string", "description": "ID of the broken path" },
+      "error": { "type": "string", "description": "What went wrong" }
+    }
+  }
+}
+```

@@ -1,0 +1,83 @@
+---
+/**
+ * SourceCode — renders actual source files from the unsurf project.
+ * If the file moves or its syntax breaks, the docs build fails.
+ * This is the dogfooding gate.
+ */
+import { Code } from 'astro:components';
+import fs from 'node:fs';
+import path from 'node:path';
+
+interface Props {
+	/** Path relative to the unsurf project root (e.g., 'src/domain/Errors.ts') */
+	file: string;
+	/** Optional line range: [start, end] (1-indexed, inclusive) */
+	lines?: [number, number];
+	/** Optional title shown above the code block */
+	title?: string;
+	/** Language override (defaults to file extension) */
+	lang?: string;
+}
+
+const { file, lines, title, lang } = Astro.props;
+
+// Resolve from unsurf project root (docs/../)
+const projectRoot = path.resolve(import.meta.dirname, '../../..');
+const filePath = path.join(projectRoot, file);
+
+// This will throw at build time if the file doesn't exist — that's the gate
+let content = fs.readFileSync(filePath, 'utf-8');
+
+if (lines) {
+	const allLines = content.split('\n');
+	content = allLines.slice(lines[0] - 1, lines[1]).join('\n');
+}
+
+const ext = file.split('.').pop() || 'ts';
+const language = lang || ext;
+const displayTitle = title || file;
+---
+
+<div class="source-code-block">
+	<div class="source-code-header">
+		<span class="source-code-file">{displayTitle}</span>
+		<a
+			href={`https://github.com/acoyfellow/unsurf/blob/main/${file}`}
+			target="_blank"
+			rel="noopener"
+			class="source-code-link"
+		>
+			View source &rarr;
+		</a>
+	</div>
+	<Code code={content} lang={language} />
+</div>
+
+<style>
+	.source-code-block {
+		margin: 1.5rem 0;
+	}
+	.source-code-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.5rem 1rem;
+		background: #141414;
+		border: 1px solid #1a1a1a;
+		border-bottom: none;
+		font-family: var(--sl-font-mono);
+		font-size: 0.75rem;
+	}
+	.source-code-file {
+		color: #9ca3af;
+	}
+	.source-code-link {
+		color: #3b82f6;
+		text-decoration: none;
+		font-size: 0.7rem;
+		letter-spacing: 0.03em;
+	}
+	.source-code-link:hover {
+		text-decoration: underline;
+	}
+</style>

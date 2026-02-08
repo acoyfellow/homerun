@@ -1,0 +1,55 @@
+---
+title: Configuration
+description: Infrastructure configuration and environment variables.
+---
+
+import SourceCode from '../../../components/SourceCode.astro';
+
+## alchemy.run.ts
+
+unsurf uses [Alchemy](https://alchemy.run) to define infrastructure as TypeScript. No YAML. No TOML.
+
+<SourceCode file="alchemy.run.ts" />
+
+## Environment variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `ALCHEMY_PASSWORD` | ✅ | Password for Alchemy state encryption |
+
+Set in a `.env` file at the project root or export in your shell.
+
+## Cloudflare bindings
+
+These are configured automatically by Alchemy:
+
+| Binding | Type | Name | Purpose |
+|---|---|---|---|
+| `DB` | D1 Database | `unsurf-db` | Stores sites, endpoints, paths, run history |
+| `STORAGE` | R2 Bucket | `unsurf-storage` | Stores HAR logs, screenshots, traces |
+| `BROWSER` | Browser Rendering | — | Headless browser for scouting |
+
+## Database schema
+
+unsurf uses [Drizzle ORM](https://orm.drizzle.team) with SQLite (D1). The complete schema:
+
+<SourceCode file="src/db/schema.ts" />
+
+Generate migrations after schema changes:
+
+```bash
+bunx drizzle-kit generate
+```
+
+Migrations are applied automatically by Alchemy on deploy.
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `bun run dev` | Local development via Alchemy |
+| `bun run deploy` | Deploy to Cloudflare |
+| `bun run generate` | Generate Drizzle migrations |
+| `bun run test` | Run test suite |
+| `bun run check` | Lint and format (Biome) |
+| `bun run typecheck` | TypeScript type checking |

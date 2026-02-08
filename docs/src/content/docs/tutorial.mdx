@@ -1,0 +1,108 @@
+---
+title: Your first unsurf
+description: Deploy unsurf and capture your first API in 5 minutes.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import SourceCode from '../../components/SourceCode.astro';
+
+We will deploy unsurf to your Cloudflare account and use the **scout** tool to capture every API endpoint on a public website. By the end, you will have a complete OpenAPI spec generated automatically.
+
+## Prerequisites
+
+- A [Cloudflare account](https://dash.cloudflare.com/sign-up)
+- [Bun](https://bun.sh) installed
+- An API key from Cloudflare (for Alchemy deployment)
+
+## Deploy
+
+<Steps>
+
+1. **Clone and install**
+
+   ```bash
+   git clone https://github.com/acoyfellow/unsurf
+   cd unsurf
+   bun install
+   ```
+
+2. **Set your Alchemy password**
+
+   ```bash
+   echo 'ALCHEMY_PASSWORD=your-secure-password' > .env
+   ```
+
+3. **Generate the database migration**
+
+   ```bash
+   bunx drizzle-kit generate
+   ```
+
+4. **Deploy to Cloudflare**
+
+   ```bash
+   bun run deploy
+   ```
+
+   Alchemy will create your D1 database, R2 bucket, and Browser Rendering binding automatically. You will see a URL in the output — that is your unsurf instance.
+
+</Steps>
+
+## Scout your first site
+
+Now we will capture the API behind [JSONPlaceholder](https://jsonplaceholder.typicode.com), a free public API.
+
+<Steps>
+
+1. **Call the scout tool**
+
+   ```bash
+   curl -X POST https://your-unsurf-url.workers.dev/tools/scout \
+     -H "Content-Type: application/json" \
+     -d '{
+       "url": "https://jsonplaceholder.typicode.com",
+       "task": "discover all API endpoints"
+     }'
+   ```
+
+2. **Read the result**
+
+   The response contains:
+   - `siteId` — the unique identifier for this site
+   - `endpointCount` — how many endpoints were captured
+   - `pathId` — a replayable path
+   - `openApiSpec` — a complete OpenAPI 3.1 specification
+
+3. **View captured endpoints**
+
+   ```bash
+   curl https://your-unsurf-url.workers.dev/sites/{siteId}/endpoints
+   ```
+
+   You will see every endpoint that was called during the scout — `GET /posts`, `GET /posts/:id`, `GET /users`, and more — each with inferred request and response schemas.
+
+</Steps>
+
+<Aside type="tip">
+The scout captured these endpoints by watching network traffic through Chrome DevTools Protocol — the same technique your browser's Network tab uses, automated.
+</Aside>
+
+## What happened
+
+unsurf launched a headless browser on Cloudflare's edge, navigated to the site, and captured every XHR/fetch request. For each unique endpoint, it:
+
+1. Normalized the URL pattern (`/posts/1` → `/posts/:id`)
+2. Inferred a JSON Schema from the response body
+3. Saved everything to D1 (via Drizzle) and R2
+4. Generated an OpenAPI 3.1 spec from all captured endpoints
+
+You now have a typed API definition for a site that may have no public documentation.
+
+Here is how a captured endpoint is represented internally:
+
+<SourceCode file="src/domain/Endpoint.ts" title="Captured endpoint schema" />
+
+## Next
+
+- [How to replay a captured API](/guides/replay/) — use the worker tool to call endpoints directly
+- [MCP Tools reference](/reference/tools/) — full input/output specification

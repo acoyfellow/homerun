@@ -1,0 +1,107 @@
+---
+title: How unsurf works
+description: The architecture and philosophy behind turning websites into typed APIs.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import SourceCode from '../../../components/SourceCode.astro';
+
+## The problem
+
+Every SPA is an API client. Behind every web form, every dashboard, every data table — there are HTTP calls to a backend. But these APIs are undocumented, unauthenticated for direct access, and invisible to agents.
+
+Agents today interact with websites by launching browsers, finding DOM elements, clicking buttons, and scraping text. This is slow (10-45 seconds per action), fragile (breaks when CSS changes), and expensive (full browser per operation).
+
+## The insight
+
+If you watch the network traffic while a browser uses a site, you see the real API. Every `fetch()` call, every XHR request — that is the typed, structured interface the frontend already uses. The UI is just a wrapper.
+
+unsurf captures that traffic and turns it into a typed API definition.
+
+## The three tools
+
+### Scout
+
+The scout launches a headless browser via [Cloudflare Browser Rendering](https://developers.cloudflare.com/browser-rendering/), navigates to a target URL, and enables Chrome DevTools Protocol (CDP) network capture.
+
+Every network request is intercepted:
+- `Network.requestWillBeSent` — captures method, URL, headers, body
+- `Network.responseReceived` + `Network.getResponseBody` — captures status, headers, response body
+
+The scout then:
+
+1. **Filters** to XHR/fetch requests (ignores images, CSS, scripts)
+2. **Normalizes** URL patterns (`/users/123` → `/users/:id`)
+3. **Groups** requests by normalized pattern
+4. **Infers** a JSON Schema from response bodies per group
+5. **Generates** an OpenAPI 3.1 specification from all captured endpoints
+6. **Saves** endpoints to D1 (via Drizzle), HAR logs and screenshots to R2
+
+### Worker
+
+The worker executes a previously scouted path. It has two strategies:
+
+- **Fast path**: If the scout captured a direct API endpoint, the worker replays the HTTP call using Effect's `HttpClient`. No browser. Milliseconds.
+- **Slow path**: If the form requires JavaScript execution, the worker launches a browser and steps through the saved navigation path.
+
+The worker always validates the response against the stored schema.
+
+### Heal
+
+Websites change. When the worker fails:
+
+1. **Retry** with exponential backoff (handles transient failures)
+2. If retries exhaust, **re-scout** the same URL with the same task
+3. **Diff** old endpoints against new ones
+4. **Update** the stored path
+5. **Re-execute** with the patched path
+
+## Why Effect
+
+unsurf is built entirely on [Effect](https://effect.website), a TypeScript library for building reliable applications. Every operation is an `Effect<Success, Error, Dependencies>`.
+
+This matters because:
+
+**Typed errors.** A scout can fail with `BrowserError`, `NetworkError`, or `StoreError`. These are not strings — they are typed values in the error channel:
+
+<SourceCode file="src/domain/Errors.ts" title="Error types" />
+
+The heal system uses `catchTag` to route each error type to the right recovery strategy.
+
+**Resource safety.** Browser containers are expensive. Effect's `Scope` and `acquireRelease` guarantee cleanup even if the scout crashes mid-operation. No zombie browsers.
+
+**Dependency injection.** Every service is defined as a `Context.Tag` and injected via `Layer`. Here's the Browser service interface:
+
+<SourceCode file="src/services/Browser.ts" title="Browser service" />
+
+In production, `Browser.Live` connects to Cloudflare's browser. In tests, `Browser.TestLive` replays recorded fixtures. The business logic is identical.
+
+**Streams.** CDP emits hundreds of network events during a session. Effect's `Stream` processes them as they arrive — filter, group, transform — without buffering everything in memory.
+
+**Retry policies.** The heal system uses `Schedule.exponential` for backoff and `Schedule.whileInput` to retry only on transient errors. This is declarative, composable, and testable.
+
+## Infrastructure
+
+unsurf runs entirely on Cloudflare:
+
+| Component | Cloudflare Service | Purpose |
+|---|---|---|
+| Compute | Workers | API server, MCP tools |
+| Browser | Browser Rendering | Headless Chrome for scouting |
+| Database | D1 (SQLite) | Endpoints, paths, run history |
+| Blob storage | R2 | HAR logs, screenshots |
+| Infra config | Alchemy | TypeScript, not YAML |
+
+<Aside>
+Everything deploys to your own Cloudflare account. unsurf is fully self-hosted — no external services, no data leaving your infrastructure.
+</Aside>
+
+## The philosophy
+
+The web was designed for humans to browse. Agents should not have to pretend to be humans.
+
+Every website already has a typed API underneath its UI. unsurf surfaces it.
+
+```
+surf the web → unsurf it
+```

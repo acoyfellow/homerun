@@ -16,3 +16,15 @@ jobs:
       - run: bun run check
       - run: bun run typecheck
       - run: bun run test
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install project deps
+        run: bun install --frozen-lockfile
+      - name: Install docs deps
+        run: cd docs && bun install --frozen-lockfile
+      - name: Build docs (dogfooding gate)
+        run: cd docs && bun run build

@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --sl-font: 'Inter', system-ui, sans-serif;
+  --sl-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --sl-nav-height: 4rem;
+}
+
+/* Dark mode: the only mode that matters */
+:root[data-theme='light'] {
+  --sl-color-bg: #fafafa;
+  --sl-color-bg-nav: #ffffff;
+  --sl-color-bg-sidebar: #f9fafb;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-bg: #0a0a0a;
+  --sl-color-bg-nav: #0a0a0a;
+  --sl-color-bg-sidebar: #0f0f0f;
+  --sl-color-hairline: #1a1a1a;
+  --sl-color-hairline-light: #141414;
+}
+
+/* Sharp corners everywhere */
+:root {
+  --sl-border-radius: 0;
+}
+
+/* Code blocks: precision */
+pre {
+  border: 1px solid var(--sl-color-hairline) !important;
+  border-radius: 0 !important;
+}
+
+code {
+  border-radius: 0 !important;
+}
+
+/* Links: electric blue, no underline until hover */
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Sidebar: weight */
+nav.sidebar {
+  border-right: 1px solid var(--sl-color-hairline);
+}
+
+/* Hero title: impact */
+.hero-title {
+  font-size: 4rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* Buttons: deliberate */
+.sl-link-button {
+  border-radius: 0 !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.sl-link-button:hover {
+  transform: translateY(-1px);
+}

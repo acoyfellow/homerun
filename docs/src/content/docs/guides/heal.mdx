@@ -1,0 +1,57 @@
+---
+title: How to heal a broken path
+description: Automatically recover when a scouted path stops working.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## When paths break
+
+Websites change. Endpoints move. Forms get redesigned. When a worker call fails, the path is marked as `broken`.
+
+The heal tool fixes it automatically.
+
+## Trigger a heal
+
+```bash
+curl -X POST https://your-unsurf-url.workers.dev/tools/heal \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pathId": "your-broken-path-id",
+    "error": "POST /api/contact returned 404"
+  }'
+```
+
+The `error` field is optional but helps the heal process understand what changed.
+
+## What heal does
+
+1. **Retry** — attempts the original path with exponential backoff (3 attempts)
+2. **Re-scout** — if retries fail, runs a fresh scout on the same site with the same task
+3. **Diff** — compares old endpoints with new ones to identify what changed
+4. **Update** — saves the new path and marks it as `active`
+5. **Verify** — executes the updated path to confirm it works
+
+## Automatic healing
+
+When the worker tool encounters a transient error (network timeout, 502, etc.), it retries automatically with exponential backoff before failing.
+
+For permanent errors (404, schema mismatch), the worker returns a `PathBrokenError`. Your agent can then call heal explicitly.
+
+<Aside type="note">
+Each heal attempt is logged in the `runs` table with full before/after diff, so you can audit what changed on the target site.
+</Aside>
+
+## Monitoring path health
+
+Query a path's status:
+
+```bash
+curl https://your-unsurf-url.workers.dev/sites/{siteId}/paths
+```
+
+Each path includes:
+- `status` — `active`, `broken`, or `healing`
+- `failCount` — consecutive failures
+- `healCount` — how many times this path has been healed
+- `lastUsedAt` — when the worker last executed this path

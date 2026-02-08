@@ -1,0 +1,69 @@
+---
+title: How to replay a captured API
+description: Execute scouted paths and replay API calls without a browser.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Replay an endpoint
+
+After scouting, the worker tool replays captured API calls directly — no browser needed.
+
+```bash
+curl -X POST https://your-unsurf-url.workers.dev/tools/worker \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pathId": "your-path-id",
+    "data": {
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    }
+  }'
+```
+
+## Fast path vs. slow path
+
+The worker tries two strategies:
+
+1. **Fast path** — if the scouted path found a direct API endpoint (e.g., `POST /api/contact`), the worker replays the HTTP call directly. This takes milliseconds.
+
+2. **Slow path** — if no direct API endpoint exists (e.g., the form submits through JavaScript), the worker launches a browser and executes the step-by-step path. This takes seconds.
+
+The worker chooses automatically. You don't need to specify which.
+
+## Passing data
+
+The `data` field maps to the captured endpoint's request schema. If the scout found a `POST /api/contact` with fields `name`, `email`, and `message`, pass those:
+
+```json
+{
+  "pathId": "example-com-contact-form",
+  "data": {
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "message": "Hello from unsurf"
+  }
+}
+```
+
+<Aside type="tip">
+Check the endpoint's `requestSchema` (from the scout result) to see exactly which fields are expected and their types.
+</Aside>
+
+## Reading the response
+
+```json
+{
+  "success": true,
+  "response": {
+    "id": 42,
+    "status": "submitted"
+  }
+}
+```
+
+The `response` field contains the target API's response body, validated against the inferred schema.
+
+## When replay fails
+
+If the target site has changed since the scout, the worker will return an error. Use the [heal tool](/guides/heal/) to re-scout and update the path automatically.
