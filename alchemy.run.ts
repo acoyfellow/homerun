@@ -1,15 +1,24 @@
-import alchemy from "alchemy";
+import alchemy, { type StateStoreType } from "alchemy";
 import { BrowserRendering, D1Database, R2Bucket, Worker } from "alchemy/cloudflare";
+import { CloudflareStateStore } from "alchemy/state";
+
+const stateStore: StateStoreType | undefined = process.env.ALCHEMY_STATE_TOKEN
+	? (scope) => new CloudflareStateStore(scope)
+	: undefined;
 
 const app = await alchemy("unsurf", {
 	password: process.env.ALCHEMY_PASSWORD || "dev-password",
+	...(stateStore ? { stateStore } : {}),
 });
 
 const DB = await D1Database("unsurf-db", {
 	migrationsDir: "./migrations",
+	adopt: true,
 });
 
-const STORAGE = await R2Bucket("unsurf-storage");
+const STORAGE = await R2Bucket("unsurf-storage", {
+	adopt: true,
+});
 
 const BROWSER = BrowserRendering();
 
