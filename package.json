@@ -3,9 +3,36 @@
 	"version": "0.0.1",
 	"description": "Turn any website into a typed API",
 	"type": "module",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": ["dist", "src", "!src/cf-worker.ts"],
+	"keywords": [
+		"api",
+		"openapi",
+		"web-scraping",
+		"browser-automation",
+		"schema-inference",
+		"effect",
+		"cloudflare-workers",
+		"mcp"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/acoyfellow/unsurf"
+	},
+	"homepage": "https://unsurf.coey.dev",
 	"scripts": {
 		"dev": "bun run alchemy.run.ts",
 		"deploy": "bun run alchemy.run.ts",
+		"build": "tsup",
+		"prepublishOnly": "bun run check && bun run typecheck && bun run test && bun run build",
 		"generate": "bunx drizzle-kit generate",
 		"studio": "bunx drizzle-kit studio",
 		"check": "bunx biome check .",
@@ -29,6 +56,7 @@
 		"@types/node": "^25.2.2",
 		"alchemy": "^0.77.5",
 		"drizzle-kit": "^0.30.5",
+		"tsup": "^8.5.1",
 		"typescript": "^5.7.3",
 		"vitest": "^3.0.5"
 	},
