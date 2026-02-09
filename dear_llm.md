@@ -81,46 +81,54 @@ Every service is a `Context.Tag` with a live implementation (CF bindings) and a 
 - 8 tests
 - Commit: `b37d8ef`
 
-### 🔲 Phase 6 — Scout Tool
-The big integration phase. Wire Browser + SchemaInferrer + OpenApiGenerator + Store:
+### ✅ Phase 6 — Scout Tool
+The big integration phase. Wires Browser + SchemaInferrer + OpenApiGenerator + Store:
 - Navigate to URL, capture network traffic
-- Filter to API requests, normalize URL patterns, group by endpoint
-- Infer schemas from response bodies
-- Save site, endpoints, paths to Store
-- Generate and return OpenAPI spec
-- Return siteId, endpointCount, pathId, openApiSpec
+- Filter to API requests (skip images/analytics/fonts)
+- Normalize URL patterns (/users/123 → /users/:id), group by endpoint
+- Infer schemas from response bodies (multiple samples merged)
+- Save site, endpoints, path, screenshot, OpenAPI spec
+- Refactored into composable Effects (buildEndpoint, persistResults, scout)
+- 9 tests
+- Commit: `af6cc59`
 
-### 🔲 Phase 7 — Worker Tool
-- Replay a scouted path by calling the API directly (no browser)
-- Load path + endpoints from Store
-- Execute HTTP calls with captured headers/auth
-- Validate response against stored schema
-- Save run history
+### ✅ Phase 7 — Worker Tool
+- Replay scouted paths via direct HTTP (no browser needed)
+- Smart endpoint selection: POST/PUT/PATCH when data provided, GET otherwise
+- Path param substitution (:id → actual value)
+- JSON response parsing, HTTP error handling
+- Run history saved on every execution
+- 7 tests
+- Commit: `da74260`
 
-### 🔲 Phase 8 — Heal Tool
-- Re-scout when a path is broken
-- Diff old vs new endpoints
-- Patch stored path
-- Retry execution
-- Update path status (active/broken/healing)
+### ✅ Phase 8 — Heal Tool
+- Retry-first: try worker with exponential backoff (500ms, 3 attempts)
+- If retries fail: mark path broken, re-scout same URL+task
+- Try worker again with re-scouted path
+- Three-state lifecycle: active → broken → healing → active
+- Track healCount and failCount
+- 4 tests (with real retry timing)
+- Commit: `da74260`
 
-### 🔲 Phase 9 — API + Worker Entry Point
-- Wire ToolsLive handlers to real Scout/Worker/Heal
-- Provide all layers (Store, Browser, SchemaInferrer, OpenApiGenerator)
-- HttpApiBuilder → fetch handler in Worker entry point
-- Health check, error handling, CORS
+### ✅ Phase 9 — API + Worker Entry Point
+- Direct routing: POST /tools/scout, /tools/worker, /tools/heal
+- Each route builds its own Effect layer from CF bindings
+- Health check (GET /), CORS preflight (OPTIONS)
+- JSON error responses
+- ApiLive.ts preserved as HttpApiBuilder reference
+- Commit: `23506b4`
 
 ### 🔲 Phase 10 — Alchemy Infrastructure
 - Verify alchemy.run.ts deploys correctly
-- Custom domain setup
+- Custom domain setup for API worker
 - CI deploys both docs + worker
 - End-to-end test against live deployment
 
 ## Current Status
 
-**55 tests passing** across 5 test files. Check + typecheck + lint all clean.
+**75 tests passing** across 8 test files. Check + typecheck + lint all clean.
 
-**Next up: Phase 6 (Scout Tool)** — the first tool that actually does something. Wires all the services together.
+**Next up: Phase 10 (Infrastructure)** — deploy the actual worker to Cloudflare and verify end-to-end.
 
 ## Docs
 
