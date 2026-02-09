@@ -63,6 +63,9 @@ export {
 // Utilities
 export { normalizeUrlPattern, extractDomain } from "./lib/url.js";
 
+// Codegen
+export { generateClient } from "./lib/codegen.js";
+
 // MCP
 export { createMcpServer, handleMcpRequest } from "./mcp.js";
 
