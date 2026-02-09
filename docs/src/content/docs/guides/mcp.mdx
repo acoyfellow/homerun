@@ -1,0 +1,93 @@
+---
+title: MCP Server
+description: Connect to unsurf from Claude Desktop, Cursor, or any MCP client.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Endpoint
+
+The unsurf MCP server is available at:
+
+```
+https://unsurf.coy.workers.dev/mcp
+```
+
+It uses the **Streamable HTTP** transport from the [MCP specification](https://modelcontextprotocol.io).
+
+## Connecting from Claude Desktop
+
+Add this to your Claude Desktop MCP config (`~/.claude/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "unsurf": {
+      "type": "streamable-http",
+      "url": "https://unsurf.coy.workers.dev/mcp"
+    }
+  }
+}
+```
+
+## Available tools
+
+### `scout`
+
+Explore a website and capture every API call.
+
+**Input:**
+- `url` (string, required) — the URL to scout
+- `task` (string, required) — what to look for
+
+**Returns:** `siteId`, `endpointCount`, `pathId`, `openApiSpec`
+
+### `worker`
+
+Replay a scouted API path directly — no browser needed.
+
+**Input:**
+- `pathId` (string, required) — the path ID from a scout result
+- `data` (object, optional) — data to pass to the endpoint
+
+**Returns:** the API response
+
+### `heal`
+
+Fix a broken path by retrying with backoff, then re-scouting.
+
+**Input:**
+- `pathId` (string, required) — the broken path ID
+- `error` (string, optional) — the error that caused the break
+
+**Returns:** `healed`, `pathId`, `healCount`
+
+## Testing with curl
+
+```bash
+# Initialize
+curl -X POST https://unsurf.coy.workers.dev/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
+
+# List tools
+curl -X POST https://unsurf.coy.workers.dev/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
+
+# Call scout
+curl -X POST https://unsurf.coy.workers.dev/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"scout","arguments":{"url":"https://jsonplaceholder.typicode.com","task":"discover all API endpoints"}}}'
+```
+
+<Aside type="note">
+The MCP server runs in stateless mode — each request is independent. The REST API at `/tools/scout`, `/tools/worker`, `/tools/heal` is still available alongside MCP.
+</Aside>
+
+## Self-hosted
+
+If you deploy your own unsurf instance, the MCP endpoint is automatically available at `/mcp` on your worker URL.
