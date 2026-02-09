@@ -111,7 +111,13 @@ nav.sidebar {
   padding-bottom: 1rem !important;
 }
 
-/* Cards: single column to match the vertical flow */
+/* Cards: responsive grid — 1 col mobile, 2 cols on wide screens */
 .card-grid {
   grid-template-columns: 1fr !important;
+}
+
+@media (min-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }
