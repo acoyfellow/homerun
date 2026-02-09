@@ -5,6 +5,11 @@ import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
   output: 'static',
+  vite: {
+    server: {
+      allowedHosts: ['workbot.exe.xyz'],
+    },
+  },
   site: 'https://unsurf.coey.dev',
   integrations: [
     starlight({
@@ -31,6 +36,7 @@ export default defineConfig({
             { label: 'Scout a website', slug: 'guides/scout' },
             { label: 'Replay a captured API', slug: 'guides/replay' },
             { label: 'Heal a broken path', slug: 'guides/heal' },
+            { label: 'Agent integration', slug: 'guides/agent-integration' },
             { label: 'MCP Server', slug: 'guides/mcp' },
           ],
         },
@@ -45,6 +51,7 @@ export default defineConfig({
           label: 'Concepts',
           items: [
             { label: 'How unsurf works', slug: 'concepts/how-it-works' },
+            { label: 'Agent patterns', slug: 'concepts/agent-patterns' },
           ],
         },
       ],

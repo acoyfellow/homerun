@@ -13,7 +13,9 @@ The unsurf MCP server is available at:
 https://unsurf.coy.workers.dev/mcp
 ```
 
-It uses the **Streamable HTTP** transport from the [MCP specification](https://modelcontextprotocol.io).
+It uses the **Streamable HTTP** transport from the [MCP specification](https://modelcontextprotocol.io). The server runs in stateless mode — each request is independent.
+
+For full documentation of all tool inputs, outputs, and error types, see the [MCP Tools reference](/reference/tools).
 
 ## Connecting from Claude Desktop
 
@@ -30,64 +32,114 @@ Add this to your Claude Desktop MCP config (`~/.claude/mcp.json`):
 }
 ```
 
-## Available tools
+Restart Claude Desktop. You should see **unsurf** listed under the MCP tools icon.
 
-### `scout`
+## Connecting from Cursor
 
-Explore a website and capture every API call.
+Open Cursor Settings → MCP Servers → **Add Server** and enter:
 
-**Input:**
-- `url` (string, required) — the URL to scout
-- `task` (string, required) — what to look for
+| Field | Value |
+|---|---|
+| Name | `unsurf` |
+| Transport | `Streamable HTTP` |
+| URL | `https://unsurf.coy.workers.dev/mcp` |
 
-**Returns:** `siteId`, `endpointCount`, `pathId`, `openApiSpec`
+Cursor will discover the `scout`, `worker`, and `heal` tools automatically.
 
-### `worker`
+## Connecting from a custom MCP client
 
-Replay a scouted API path directly — no browser needed.
+Any client that supports the Streamable HTTP transport can connect. Point it at the `/mcp` endpoint and send standard JSON-RPC messages:
 
-**Input:**
-- `pathId` (string, required) — the path ID from a scout result
-- `data` (object, optional) — data to pass to the endpoint
-
-**Returns:** the API response
-
-### `heal`
-
-Fix a broken path by retrying with backoff, then re-scouting.
-
-**Input:**
-- `pathId` (string, required) — the broken path ID
-- `error` (string, optional) — the error that caused the break
-
-**Returns:** `healed`, `pathId`, `healCount`
-
-## Testing with curl
-
-```bash
-# Initialize
-curl -X POST https://unsurf.coy.workers.dev/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
-
-# List tools
-curl -X POST https://unsurf.coy.workers.dev/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
-
-# Call scout
-curl -X POST https://unsurf.coy.workers.dev/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"scout","arguments":{"url":"https://jsonplaceholder.typicode.com","task":"discover all API endpoints"}}}'
+```
+POST /mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
 ```
 
+The server supports the `initialize`, `tools/list`, and `tools/call` methods.
+
+## Testing the connection
+
+You can verify the MCP endpoint works with plain `curl`.
+
+### Initialize
+
+```bash
+curl -X POST https://unsurf.coy.workers.dev/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "initialize",
+    "params": {
+      "protocolVersion": "2024-11-05",
+      "capabilities": {},
+      "clientInfo": { "name": "test", "version": "1.0" }
+    }
+  }'
+```
+
+You should get back a response with `serverInfo` and `capabilities`.
+
+### List tools
+
+```bash
+curl -X POST https://unsurf.coy.workers.dev/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}'
+```
+
+The response should list three tools: `scout`, `worker`, and `heal`.
+
+### Call a tool
+
+```bash
+curl -X POST https://unsurf.coy.workers.dev/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "scout",
+      "arguments": {
+        "url": "https://jsonplaceholder.typicode.com",
+        "task": "discover all API endpoints"
+      }
+    }
+  }'
+```
+
+## Self-hosting
+
+When you deploy your own unsurf instance, the MCP endpoint is automatically available at `/mcp` on your worker URL.
+
+1. Clone the repo and install dependencies:
+   ```bash
+   git clone https://github.com/petermillspaugh/unsurf.git
+   cd unsurf && bun install
+   ```
+
+2. Set the required environment variables (see [Configuration](/reference/config#environment-variables)):
+   ```bash
+   export ALCHEMY_PASSWORD="your-secret-password"
+   export CLOUDFLARE_API_TOKEN="your-cf-token"
+   export CLOUDFLARE_ACCOUNT_ID="your-cf-account-id"
+   ```
+
+3. Deploy:
+   ```bash
+   bun run deploy
+   ```
+
+4. Point your MCP clients at your worker URL:
+   ```
+   https://unsurf.<your-subdomain>.workers.dev/mcp
+   ```
+
 <Aside type="note">
-The MCP server runs in stateless mode — each request is independent. The REST API at `/tools/scout`, `/tools/worker`, `/tools/heal` is still available alongside MCP.
+The REST API at `/tools/scout`, `/tools/worker`, `/tools/heal` is available alongside MCP on the same worker. You don't need to choose one or the other.
 </Aside>
-
-## Self-hosted
-
-If you deploy your own unsurf instance, the MCP endpoint is automatically available at `/mcp` on your worker URL.

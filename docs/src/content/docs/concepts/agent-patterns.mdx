@@ -1,0 +1,183 @@
+---
+title: Agent interaction patterns
+description: How AI agents interact with unsurf — lifecycle, context management, cost model.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Why agent-first
+
+Most web automation tools assume a human is driving. They expose browser sessions, DOM selectors, and screenshot-based reasoning. This works, but poorly:
+
+| Approach | Latency | Fragility | Cost |
+|---|---|---|---|
+| Browser automation (Playwright, Puppeteer) | 10-45s per action | Breaks on CSS/DOM changes | Full browser per op |
+| Screenshot + vision model | 5-15s per action | Breaks on layout changes | Vision API calls |
+| **unsurf (after scout)** | **50-200ms per call** | **Breaks only if API changes** | **One HTTP request** |
+
+unsurf inverts the model. Instead of the agent pretending to be a human clicking buttons, the agent discovers the real API underneath and calls it directly.
+
+The browser is used *once* to scout. After that, it's pure HTTP.
+
+## The lifecycle
+
+An agent using unsurf follows a three-phase lifecycle:
+
+```
+┌─────────┐     ┌─────────┐     ┌─────────┐
+│  Scout  │────▶│ Worker  │────▶│  Heal   │
+│ (learn) │     │  (use)  │     │  (fix)  │
+└─────────┘     └─────────┘     └─────────┘
+   once          many times      when needed
+```
+
+### Scout — expensive, infrequent
+
+The agent calls `scout` with a URL and a natural-language task. unsurf launches a headless browser, navigates the site, captures every XHR/fetch request via Chrome DevTools Protocol, infers schemas, and returns an OpenAPI spec plus a replayable `pathId`.
+
+**Cost:** 5-30 seconds. Requires a browser container.
+
+**When to scout:**
+- First time interacting with a site
+- After a `heal` fails (site has changed fundamentally)
+- When the agent needs to discover new endpoints
+
+### Worker — cheap, frequent
+
+The agent calls `worker` with a `pathId` and optional `data`. unsurf replays the captured API call directly via HTTP. No browser.
+
+**Cost:** 50-200ms. One HTTP request.
+
+**When to use:**
+- Every time the agent needs data from or sends data to the site
+- Repeatedly, in loops, in parallel — it's just an API call
+
+### Heal — automatic recovery
+
+When `worker` fails, the agent calls `heal`. unsurf retries with exponential backoff (handles transient errors), then re-scouts if the site has changed, diffs the old and new endpoints, updates the path, and verifies.
+
+**Cost:** Variable. 500ms for a transient retry, 5-30s for a full re-scout.
+
+**When to use:**
+- `worker` returns `PathBrokenError`
+- The agent wants self-healing behavior without manual intervention
+
+## Managing state across calls
+
+unsurf's MCP server is **stateless** — each request is independent. The agent must track two identifiers:
+
+| ID | From | Used by | Lifetime |
+|---|---|---|---|
+| `siteId` | `scout` response | Querying endpoints, OpenAPI spec | Permanent (per site) |
+| `pathId` | `scout` response | `worker`, `heal` | Until site changes |
+
+A well-behaved agent stores these in its conversation context:
+
+```
+Agent: "I'll scout example.com for their contact form."
+→ scout({url, task}) → {siteId: "abc", pathId: "def"}
+
+Agent: "Found it. The form submits to POST /api/contact.
+        I'll remember pathId 'def' for future submissions."
+→ worker({pathId: "def", data: {...}}) → {success: true}
+```
+
+If the agent loses the `pathId` (new conversation, context window overflow), it can re-scout. The results are stored server-side in D1, so the same site won't produce duplicate entries.
+
+## When to re-scout vs heal
+
+| Situation | Action | Why |
+|---|---|---|
+| Worker returns `PathBrokenError` | `heal` | Heal tries backoff first, then re-scouts automatically |
+| Worker returns `NetworkError` | Retry, then `heal` | Could be transient |
+| Agent needs endpoints it didn't capture | `scout` with a new task | Heal only fixes known paths |
+| Site has been completely redesigned | `scout` | Heal can only patch, not rediscover |
+| Agent lost its `pathId` | `scout` | Fastest way to get a new one |
+
+<Aside type="tip">
+When in doubt, call `heal` first. It's cheaper than a full re-scout when the site only changed slightly.
+</Aside>
+
+## URL normalization
+
+When the scout captures requests, it normalizes URL patterns so the agent gets clean, parameterized endpoints instead of specific instances:
+
+| Raw URL | Normalized pattern |
+|---|---|
+| `/users/42` | `/users/:id` |
+| `/posts/550e8400-e29b-41d4-a716-446655440000` | `/posts/:id` |
+| `/api/items/SGVsbG8gV29ybGQ=` | `/api/items/:id` |
+| `/api/v2/users` | `/api/v2/users` (no change) |
+
+The normalizer detects four ID patterns:
+- **Numeric** — `\d+`
+- **UUID** — standard 8-4-4-4-12 hex format
+- **Base64** — 16+ chars of `[A-Za-z0-9+/=]`
+- **Hex** — 8+ hex characters
+
+Everything else is treated as a literal path segment. This means the agent sees `GET /users/:id` once, not `GET /users/1`, `GET /users/2`, `GET /users/3` separately.
+
+## Schema inference
+
+For each captured endpoint, unsurf infers a JSON Schema from the response body. The agent receives this in the OpenAPI spec.
+
+What the inferrer detects:
+
+| JSON value | Inferred type | Extras |
+|---|---|---|
+| `"hello"` | `string` | — |
+| `"2024-01-15T10:30:00Z"` | `string` | `format: "date-time"` |
+| `"user@example.com"` | `string` | `format: "email"` |
+| `"https://..."` | `string` | `format: "uri"` |
+| `42` | `integer` | — |
+| `3.14` | `number` | — |
+| `true` | `boolean` | — |
+| `[...]` | `array` | `items` schema inferred from elements |
+| `{...}` | `object` | `properties` + `required` inferred |
+
+When multiple responses are observed for the same endpoint, schemas are **merged**:
+- Properties present in all samples → `required`
+- Properties present in some samples → optional
+- `integer` + `number` → `number`
+- Conflicting types → `anyOf`
+
+This means the more traffic the scout captures, the more accurate the schema becomes.
+
+## Cost and latency model
+
+For agents making decisions about when to call each tool:
+
+| Tool | Browser needed | Typical latency | Billable |
+|---|---|---|---|
+| `scout` | ✅ Yes | 5-30s | Browser Rendering minutes |
+| `worker` (fast path) | ❌ No | 50-200ms | Worker CPU time only |
+| `worker` (slow path) | ✅ Yes | 3-15s | Browser Rendering minutes |
+| `heal` (retry succeeds) | ❌ No | 0.5-2s | Worker CPU time only |
+| `heal` (re-scout needed) | ✅ Yes | 5-30s | Browser Rendering minutes |
+
+<Aside>
+Cloudflare Browser Rendering requires a Workers Paid plan. The fast path (direct HTTP replay) is the primary value of unsurf — scout once, call cheaply forever.
+</Aside>
+
+## Error types and agent responses
+
+Each error type signals a different recovery strategy:
+
+| Error | Meaning | Agent should |
+|---|---|---|
+| `BrowserError` | Browser container failed | Retry once, then report to user |
+| `NetworkError` | Target site unreachable | Wait and retry (transient) |
+| `StoreError` | Database write failed | Retry once (infrastructure issue) |
+| `NotFoundError` | `pathId` doesn't exist | Re-scout the site |
+| `PathBrokenError` | Site changed, path invalid | Call `heal` |
+
+A robust agent handles errors like this:
+
+```
+worker(pathId, data)
+  ├─ success → return result
+  ├─ PathBrokenError → heal(pathId) → worker(newPathId, data)
+  ├─ NotFoundError → scout(url, task) → worker(newPathId, data)  
+  ├─ NetworkError → wait 2s → retry up to 3x
+  └─ BrowserError → report failure to user
+```

@@ -1,8 +1,9 @@
 ---
 title: Configuration
-description: Infrastructure configuration and environment variables.
+description: Environment variables, Cloudflare bindings, database schema, REST API, and scripts.
 ---
 
+import { Aside } from '@astrojs/starlight/components';
 import SourceCode from '../../../components/SourceCode.astro';
 
 ## alchemy.run.ts
@@ -15,9 +16,14 @@ unsurf uses [Alchemy](https://alchemy.run) to define infrastructure as TypeScrip
 
 | Variable | Required | Description |
 |---|---|---|
-| `ALCHEMY_PASSWORD` | ✅ | Password for Alchemy state encryption |
+| `ALCHEMY_PASSWORD` | ✅ | Encrypts Alchemy's local state file. Set any strong passphrase; changing it invalidates existing state. |
+| `ALCHEMY_STATE_TOKEN` | | Cloudflare API token scoped to Alchemy's remote state store (`CloudflareStateStore`). When set, state is persisted remotely instead of on disk — required for CI deploys. |
+| `CLOUDFLARE_API_TOKEN` | ✅ | Cloudflare API token with **Workers, D1, R2, and Browser Rendering** permissions. Used by Alchemy to provision resources. |
+| `CLOUDFLARE_ACCOUNT_ID` | ✅ | Your Cloudflare account ID. Found at the top of the Cloudflare dashboard. |
+| `ANTHROPIC_API_KEY` | | Anthropic API key. Passed as a secret binding to the worker for LLM-guided scouting. Without it, scout falls back to heuristic-only mode. |
+| `ALCHEMY_STAGE` | | Deployment stage (`production` by default). Set to a different value to deploy an isolated copy (e.g. `staging`, `dev`). |
 
-Set in a `.env` file at the project root or export in your shell.
+Set these in a `.env` file at the project root or export them in your shell before running `bun run deploy`.
 
 ## Cloudflare bindings
 
@@ -28,14 +34,223 @@ These are configured automatically by Alchemy:
 | `DB` | D1 Database | `unsurf-db` | Stores sites, endpoints, paths, run history |
 | `STORAGE` | R2 Bucket | `unsurf-storage` | Stores HAR logs, screenshots, traces |
 | `BROWSER` | Browser Rendering | — | Headless browser for scouting |
+| `ANTHROPIC_API_KEY` | Secret | — | Passed through as an encrypted secret binding (only when the env var is set) |
 
 ## Database schema
 
-unsurf uses [Drizzle ORM](https://orm.drizzle.team) with SQLite (D1). The complete schema:
+unsurf uses [Drizzle ORM](https://orm.drizzle.team) with Cloudflare D1 (SQLite). Migrations are applied automatically by Alchemy on deploy — no manual migration steps are needed.
 
 <SourceCode file="src/db/schema.ts" />
 
-Migrations are applied automatically by Alchemy on deploy — no manual migration steps are needed.
+### `sites`
+
+One row per distinct website that has been scouted.
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | `text` PK | Unique site identifier (e.g. `site_lx1a_k9m3`) |
+| `url` | `text` | The URL that was passed to `scout` |
+| `domain` | `text` | Extracted hostname — used for grouping and deduplication |
+| `first_scouted_at` | `text` (ISO 8601) | Timestamp of the first scout |
+| `last_scouted_at` | `text` (ISO 8601) | Timestamp of the most recent scout |
+
+### `endpoints`
+
+Every unique API call observed during scouting. A site has many endpoints. Endpoints are deduplicated by the composite unique index `(site_id, method, path_pattern)`.
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | `text` PK | Unique endpoint identifier |
+| `site_id` | `text` FK → `sites.id` | The site this endpoint belongs to |
+| `method` | `text` | HTTP method (`GET`, `POST`, etc.) |
+| `path_pattern` | `text` | URL path with parameter placeholders (e.g. `/api/v1/users/:id`) |
+| `request_schema` | `text` (JSON) | JSON Schema of the request body, inferred from observed traffic |
+| `response_schema` | `text` (JSON) | JSON Schema of the response body |
+| `request_headers` | `text` (JSON) | Notable request headers (auth tokens, content types) |
+| `response_headers` | `text` (JSON) | Notable response headers |
+| `sample_count` | `integer` | How many times this endpoint was observed (higher = more confident schema) |
+| `first_seen_at` | `text` (ISO 8601) | When this endpoint was first captured |
+| `last_seen_at` | `text` (ISO 8601) | When this endpoint was last captured |
+
+### `paths`
+
+A replayable sequence of steps that accomplishes a task on a site. Created by `scout`, executed by `worker`, repaired by `heal`. A site can have many paths; each path references one or more endpoints.
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | `text` PK | Unique path identifier (returned as `pathId`) |
+| `site_id` | `text` FK → `sites.id` | The site this path belongs to |
+| `task` | `text` | The natural-language task passed to `scout` |
+| `steps` | `text` (JSON array) | Ordered list of HTTP calls to replay |
+| `endpoint_ids` | `text` (JSON array) | IDs of the endpoints this path touches |
+| `status` | `text` | `active`, `broken`, or `healing` |
+| `created_at` | `text` (ISO 8601) | When the path was created |
+| `last_used_at` | `text` (ISO 8601) | When `worker` last executed this path |
+| `fail_count` | `integer` | Consecutive failures (reset to 0 on success) |
+| `heal_count` | `integer` | Total number of successful heals |
+
+### `runs`
+
+Audit log of every tool invocation — scout, worker, and heal. Used for debugging, monitoring, and billing.
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | `text` PK | Unique run identifier |
+| `path_id` | `text` FK → `paths.id` | The path this run relates to (null for scout runs on new sites) |
+| `tool` | `text` | Which tool ran: `scout`, `worker`, or `heal` |
+| `status` | `text` | `success` or `failure` |
+| `input` | `text` (JSON) | The full input passed to the tool |
+| `output` | `text` (JSON) | The tool's result (null on failure) |
+| `error` | `text` | Error message (null on success) |
+| `duration_ms` | `integer` | Wall-clock time of the run |
+| `har_key` | `text` | R2 object key for the HAR recording (scout runs only) |
+| `created_at` | `text` (ISO 8601) | When the run started |
+
+### Relationships
+
+```
+sites 1─┬─∞ endpoints
+        └─∞ paths 1──∞ runs
+```
+
+- A **site** has many **endpoints** (all API calls observed) and many **paths** (replayable task sequences).
+- A **path** belongs to one site and references specific endpoints via `endpoint_ids`.
+- A **run** belongs to one path and records a single tool invocation.
+
+## REST API
+
+The worker exposes a JSON REST API alongside the MCP endpoint.
+
+### `GET /`
+
+Health check and service metadata.
+
+**Response** `200`
+```json
+{
+  "name": "unsurf",
+  "version": "0.2.0",
+  "description": "Turn any website into a typed API",
+  "tools": ["scout", "worker", "heal"],
+  "mcp": "/mcp",
+  "docs": "https://unsurf.coey.dev"
+}
+```
+
+### `POST /tools/scout`
+
+Explore a website and capture its API endpoints.
+
+**Request body**
+```json
+{
+  "url": "https://example.com",
+  "task": "find the user search endpoint"
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `url` | `string` | ✅ | Target URL to scout |
+| `task` | `string` | ✅ | Natural-language description of what to find |
+
+**Response** `200`
+```json
+{
+  "siteId": "site_lx1a_k9m3",
+  "endpointCount": 4,
+  "pathId": "path_lx1a_q7z2",
+  "openApiSpec": { "..." : "OpenAPI 3.1 document" }
+}
+```
+
+**Errors**
+
+| Status | Body | When |
+|---|---|---|
+| `400` | `{"error": "Missing 'url' and 'task' in request body"}` | Required fields missing |
+| `500` | `{"error": "..."}` | Browser, network, or storage failure |
+
+### `POST /tools/worker`
+
+Replay a scouted path — executes the captured API calls directly, no browser needed.
+
+**Request body**
+```json
+{
+  "pathId": "path_lx1a_q7z2",
+  "data": { "query": "alice" }
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `pathId` | `string` | ✅ | Path ID from a previous scout |
+| `data` | `object` | | Data to interpolate into the request |
+
+**Response** `200`
+```json
+{
+  "success": true,
+  "response": { "users": [{ "id": 1, "name": "Alice" }] }
+}
+```
+
+**Errors**
+
+| Status | Body | When |
+|---|---|---|
+| `400` | `{"error": "Missing 'pathId' in request body"}` | Required field missing |
+| `500` | `{"error": "PathBrokenError: POST /api/v1/users returned 404"}` | Path is broken — call heal |
+| `500` | `{"error": "..."}` | Network or storage failure |
+
+### `POST /tools/heal`
+
+Repair a broken path by retrying, then re-scouting if retries fail.
+
+**Request body**
+```json
+{
+  "pathId": "path_lx1a_q7z2",
+  "error": "POST /api/v1/users returned 404"
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `pathId` | `string` | ✅ | ID of the broken path |
+| `error` | `string` | | Description of what went wrong — helps the re-scout |
+
+**Response** `200`
+```json
+{
+  "healed": true,
+  "newPathId": "path_mx2b_r8a1"
+}
+```
+
+**Errors**
+
+| Status | Body | When |
+|---|---|---|
+| `400` | `{"error": "Missing 'pathId' in request body"}` | Required field missing |
+| `500` | `{"error": "..."}` | Browser, network, or storage failure |
+
+### `POST /mcp`
+
+MCP (Streamable HTTP) endpoint. See [MCP Server guide](/guides/mcp) and [MCP Tools reference](/reference/tools).
+
+### CORS
+
+All endpoints return permissive CORS headers (`Access-Control-Allow-Origin: *`). `OPTIONS` preflight requests are handled automatically.
+
+### Unknown routes
+
+Any other method/path combination returns `404`:
+
+```json
+{ "error": "Not found" }
+```
 
 ## Scripts
 
