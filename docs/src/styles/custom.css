@@ -90,10 +90,9 @@ nav.sidebar {
   transform: translateY(-1px);
 }
 
-/* Hero snippet: center, constrain width */
+/* Hero snippet: full width, aligned with hero */
 .hero-snippet {
-  max-width: 640px;
-  margin: 0 auto 2rem;
+  margin: 0 0 2rem;
   text-align: left;
 }
 
@@ -105,4 +104,14 @@ nav.sidebar {
 /* Tab labels: tighter */
 .hero-snippet .starlight-tabs [role="tablist"] {
   gap: 0;
+}
+
+/* Reduce gap between hero and content */
+.hero {
+  padding-bottom: 1rem !important;
+}
+
+/* Cards: single column to match the vertical flow */
+.card-grid {
+  grid-template-columns: 1fr !important;
 }
