@@ -119,46 +119,82 @@ nav.sidebar {
 
 
 /* ═══════════════════════════════════════════════════════════
-   SPLASH PAGE ONLY — forced dark, full send
+   SPLASH PAGE — theme-aware, full send
    ═══════════════════════════════════════════════════════════ */
 
-/* force dark on splash regardless of toggle */
-:root[data-has-hero] {
-  --sl-color-bg: #050505;
-  --sl-color-bg-nav: rgba(5, 5, 5, 0.6);
-  --sl-color-hairline: #1a1a1a;
-  --sl-color-text: #e8e8e8;
-  --sl-color-white: #f5f5f5;
-  --sl-color-gray-1: #e0e0e0;
-  --sl-color-gray-2: #aaa;
-  --sl-color-gray-3: #666;
-  --sl-color-gray-4: #333;
-  --sl-color-gray-5: #1a1a1a;
-  --sl-color-gray-6: #111;
-  --un-line: #1a1a1a;
-  --un-dim: #444;
-  --un-mute: #666;
-  --un-text: #e8e8e8;
-  --un-surface: #111;
-  color-scheme: dark;
+/* ── splash: dark ── */
+:root[data-has-hero][data-theme='dark'] {
+  --sp-bg: #050505;
+  --sp-bg-deep: #080812;
+  --sp-bg-mid: #0a0a18;
+  --sp-nav-bg: rgba(5, 5, 5, 0.6);
+  --sp-nav-border: rgba(255,255,255,0.06);
+  --sp-grid: #1a1a1a;
+  --sp-line: #1a1a1a;
+  --sp-dim: #444;
+  --sp-mute: #666;
+  --sp-text: #e8e8e8;
+  --sp-surface: #111;
+  --sp-card-bg: #050505;
+  --sp-card-hover: #111;
+  --sp-btn-primary-bg: #f5f5f5;
+  --sp-btn-primary-fg: #050505;
+  --sp-btn-ghost-fg: #444;
+  --sp-btn-ghost-border: #1a1a1a;
+  --sp-btn-ghost-hover-fg: #f5f5f5;
+  --sp-btn-ghost-hover-border: #666;
+  --sp-title-start: #f5f5f5;
+  --sp-tab-fg: #444;
+  --sp-tab-border: #1a1a1a;
+  --sp-tab-bg: rgba(255,255,255,0.02);
+  --sp-code-fg: #444;
+  --sp-code-bg: rgba(10, 10, 10, 0.8);
+  --sp-cursor-color: var(--un-cyan);
+  --sp-scanline: rgba(255,255,255,0.008);
 }
 
-/* hide theme toggle on splash — it's always dark */
-:root[data-has-hero] starlight-theme-select {
-  display: none !important;
+/* ── splash: light ── */
+:root[data-has-hero][data-theme='light'] {
+  --sp-bg: #fafafa;
+  --sp-bg-deep: #f0f0ff;
+  --sp-bg-mid: #eeeef8;
+  --sp-nav-bg: rgba(255, 255, 255, 0.8);
+  --sp-nav-border: #e5e5e5;
+  --sp-grid: #e0e0e0;
+  --sp-line: #e0e0e0;
+  --sp-dim: #888;
+  --sp-mute: #777;
+  --sp-text: #1a1a1a;
+  --sp-surface: #f0f0f0;
+  --sp-card-bg: #fff;
+  --sp-card-hover: #f5f5ff;
+  --sp-btn-primary-bg: var(--un-accent);
+  --sp-btn-primary-fg: #fff;
+  --sp-btn-ghost-fg: #666;
+  --sp-btn-ghost-border: #ddd;
+  --sp-btn-ghost-hover-fg: var(--un-accent);
+  --sp-btn-ghost-hover-border: var(--un-accent);
+  --sp-title-start: #1a1a1a;
+  --sp-tab-fg: #999;
+  --sp-tab-border: #e5e5e5;
+  --sp-tab-bg: rgba(0,0,0,0.02);
+  --sp-code-fg: #555;
+  --sp-code-bg: rgba(255, 255, 255, 0.9);
+  --sp-cursor-color: var(--un-accent);
+  --sp-scanline: rgba(0,0,0,0.01);
 }
 
-/* splash nav: transparent glass */
+/* splash nav */
 :root[data-has-hero] header.header {
-  background: rgba(5, 5, 5, 0.5) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  background: var(--sp-nav-bg) !important;
+  border-bottom: 1px solid var(--sp-nav-border) !important;
 }
 
 /* ── background: breathing grid ── */
 :root[data-has-hero] main {
   background:
-    linear-gradient(180deg, #050505 0%, #080812 40%, #0a0a18 70%, #050505 100%),
-    #050505 !important;
+    linear-gradient(180deg, var(--sp-bg) 0%, var(--sp-bg-deep) 40%, var(--sp-bg-mid) 70%, var(--sp-bg) 100%),
+    var(--sp-bg) !important;
   position: relative;
   overflow: hidden;
 }
@@ -168,8 +204,8 @@ nav.sidebar {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(#1a1a1a 1px, transparent 1px),
-    linear-gradient(90deg, #1a1a1a 1px, transparent 1px);
+    linear-gradient(var(--sp-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--sp-grid) 1px, transparent 1px);
   background-size: 60px 60px;
   opacity: 0.3;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 70%);
@@ -228,8 +264,8 @@ nav.sidebar {
   line-height: 0.85;
   background: linear-gradient(
     135deg,
-    #f5f5f5 0%,
-    #f5f5f5 40%,
+    var(--sp-title-start) 0%,
+    var(--sp-title-start) 40%,
     var(--un-cyan) 60%,
     var(--un-accent) 80%,
     var(--un-hot) 100%
@@ -246,13 +282,13 @@ nav.sidebar {
 
 .hero-title::after {
   content: '\2588';
-  -webkit-text-fill-color: var(--un-cyan);
+  -webkit-text-fill-color: var(--sp-cursor-color);
   animation: cursorBlink 1s step-end infinite;
   font-size: 0.6em;
   margin-left: 0.05em;
   vertical-align: baseline;
   opacity: 0.7;
-  filter: drop-shadow(0 0 10px var(--un-cyan));
+  filter: drop-shadow(0 0 10px var(--sp-cursor-color));
 }
 
 @keyframes gradientShift {
@@ -268,7 +304,7 @@ nav.sidebar {
 /* tagline */
 :root[data-has-hero] .hero .tagline {
   font-size: clamp(1.1rem, 2.5vw, 1.6rem);
-  color: #666;
+  color: var(--sp-mute);
   font-weight: 400;
   letter-spacing: 0.01em;
   margin-top: 1.5rem;
@@ -290,8 +326,8 @@ nav.sidebar {
 }
 
 :root[data-has-hero] .sl-link-button.primary {
-  background: #f5f5f5 !important;
-  color: #050505 !important;
+  background: var(--sp-btn-primary-bg) !important;
+  color: var(--sp-btn-primary-fg) !important;
   border: none !important;
 }
 
@@ -299,18 +335,18 @@ nav.sidebar {
   background: var(--un-cyan) !important;
   color: #050505 !important;
   transform: translateY(-2px);
-  box-shadow: 0 0 30px var(--un-glow-cyan), 0 10px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 0 30px var(--un-glow-cyan), 0 10px 40px rgba(0,0,0,0.2);
   text-decoration: none;
 }
 
 :root[data-has-hero] .sl-link-button.minimal {
-  color: #444 !important;
-  border: 1px solid #1a1a1a !important;
+  color: var(--sp-btn-ghost-fg) !important;
+  border: 1px solid var(--sp-btn-ghost-border) !important;
 }
 
 :root[data-has-hero] .sl-link-button.minimal:hover {
-  color: #f5f5f5 !important;
-  border-color: #666 !important;
+  color: var(--sp-btn-ghost-hover-fg) !important;
+  border-color: var(--sp-btn-ghost-hover-border) !important;
   transform: translateY(-2px);
   text-decoration: none;
 }
@@ -324,8 +360,8 @@ nav.sidebar {
 }
 
 .hero-snippet .starlight-tabs {
-  border: 1px solid #1a1a1a !important;
-  background: rgba(10, 10, 10, 0.8) !important;
+  border: 1px solid var(--sp-tab-border) !important;
+  background: var(--sp-code-bg) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   overflow: hidden;
@@ -333,13 +369,13 @@ nav.sidebar {
 
 .hero-snippet .starlight-tabs [role="tablist"] {
   gap: 0;
-  background: rgba(255,255,255,0.02) !important;
-  border-bottom: 1px solid #1a1a1a !important;
+  background: var(--sp-tab-bg) !important;
+  border-bottom: 1px solid var(--sp-tab-border) !important;
   padding: 0 !important;
 }
 
 .hero-snippet .starlight-tabs [role="tab"] {
-  color: #444 !important;
+  color: var(--sp-tab-fg) !important;
   font-size: 0.7rem !important;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -349,9 +385,9 @@ nav.sidebar {
 }
 
 .hero-snippet .starlight-tabs [role="tab"][aria-selected="true"] {
-  color: var(--un-cyan) !important;
-  background: rgba(34, 211, 238, 0.05) !important;
-  box-shadow: inset 0 -2px 0 var(--un-cyan) !important;
+  color: var(--un-accent) !important;
+  background: rgba(79, 70, 229, 0.06) !important;
+  box-shadow: inset 0 -2px 0 var(--un-accent) !important;
 }
 
 .hero-snippet pre {
@@ -364,7 +400,7 @@ nav.sidebar {
 }
 
 .hero-snippet pre code {
-  color: #444 !important;
+  color: var(--sp-code-fg) !important;
 }
 
 /* scan lines */
@@ -376,8 +412,8 @@ nav.sidebar {
     0deg,
     transparent,
     transparent 2px,
-    rgba(255,255,255,0.008) 2px,
-    rgba(255,255,255,0.008) 4px
+    var(--sp-scanline) 2px,
+    var(--sp-scanline) 4px
   );
   pointer-events: none;
   z-index: 10;
@@ -387,8 +423,8 @@ nav.sidebar {
 :root[data-has-hero] .card-grid {
   grid-template-columns: 1fr !important;
   gap: 1px !important;
-  background: #1a1a1a;
-  border: 1px solid #1a1a1a;
+  background: var(--sp-line);
+  border: 1px solid var(--sp-line);
   animation: fadeSlideUp 1s ease 0.9s both;
 }
 
@@ -405,7 +441,7 @@ nav.sidebar {
 }
 
 :root[data-has-hero] .card-grid > .card {
-  background: #050505 !important;
+  background: var(--sp-card-bg) !important;
   border: none !important;
   border-radius: 0 !important;
   padding: 2rem !important;
@@ -427,7 +463,7 @@ nav.sidebar {
 }
 
 :root[data-has-hero] .card-grid > .card:hover {
-  background: #111 !important;
+  background: var(--sp-card-hover) !important;
 }
 
 :root[data-has-hero] .card-grid > .card:hover::before {
@@ -452,7 +488,7 @@ body:not(:root[data-has-hero]) .card-grid {
 /* ── splash footer ── */
 :root[data-has-hero] footer {
   background: transparent !important;
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid var(--sp-line);
 }
 
 /* ── splash page fade in ── */
