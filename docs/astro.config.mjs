@@ -14,6 +14,9 @@ export default defineConfig({
         { icon: 'github', label: 'GitHub', href: 'https://github.com/acoyfellow/unsurf' },
       ],
       customCss: ['./src/styles/custom.css'],
+      components: {
+        Head: './src/components/Head.astro',
+      },
       sidebar: [
         {
           label: 'Start',

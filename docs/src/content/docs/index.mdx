@@ -17,7 +17,54 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+
+<div class="hero-snippet">
+
+<Tabs>
+  <TabItem label="MCP">
+```json
+// Connect from Claude, Cursor, or any MCP client
+{
+  "mcpServers": {
+    "unsurf": {
+      "type": "streamable-http",
+      "url": "https://unsurf.coy.workers.dev/mcp"
+    }
+  }
+}
+```
+  </TabItem>
+  <TabItem label="curl">
+```bash
+# Scout any site → get a typed OpenAPI spec
+curl -X POST https://unsurf.coy.workers.dev/tools/scout \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://any-website.com",
+    "task": "find all API endpoints"
+  }'
+
+# Returns: siteId, endpoints[], openApiSpec, pathId
+```
+  </TabItem>
+  <TabItem label="npm">
+```typescript
+import { scout, worker, heal } from "unsurf";
+
+// Scout → capture every API call
+const result = await scout({ url, task });
+
+// Worker → replay without a browser
+const data = await worker({ pathId: result.pathId });
+
+// Heal → auto-fix when sites change
+const fixed = await heal({ pathId, error });
+```
+  </TabItem>
+</Tabs>
+
+</div>
 
 <CardGrid>
   <Card title="Scout" icon="magnifier">
@@ -28,6 +75,9 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
   </Card>
   <Card title="Heal" icon="heart">
     Site changed? Path broken? Heal re-scouts, diffs, patches, and retries automatically.
+  </Card>
+  <Card title="MCP Server" icon="open-book">
+    Connect from Claude Desktop, Cursor, or any MCP client. Three tools, one endpoint.
   </Card>
   <Card title="NPM Package" icon="add-document">
     `npm install unsurf` — use the tools, services, and types in your own project.

@@ -71,3 +71,20 @@ nav.sidebar {
 .sl-link-button:hover {
   transform: translateY(-1px);
 }
+
+/* Hero snippet: center, constrain width */
+.hero-snippet {
+  max-width: 640px;
+  margin: 0 auto 2rem;
+  text-align: left;
+}
+
+.hero-snippet pre {
+  font-size: 0.85rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Tab labels: tighter */
+.hero-snippet .starlight-tabs [role="tablist"] {
+  gap: 0;
+}
