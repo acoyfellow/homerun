@@ -5,11 +5,11 @@ import type { BrowserWorker } from "@cloudflare/puppeteer";
  * Cloudflare Worker entry point
  */
 import { Effect, Layer } from "effect";
+import { handleMcpRequest } from "./mcp.js";
 import { BrowserCfLive } from "./services/Browser.js";
-import { Browser } from "./services/Browser.js";
 import { OpenApiGenerator, makeOpenApiGenerator } from "./services/OpenApiGenerator.js";
 import { SchemaInferrer, makeSchemaInferrer } from "./services/SchemaInferrer.js";
-import { Store, StoreD1Live } from "./services/Store.js";
+import { StoreD1Live } from "./services/Store.js";
 import { heal } from "./tools/Heal.js";
 import { scout } from "./tools/Scout.js";
 import { worker } from "./tools/Worker.js";
@@ -118,11 +118,17 @@ export default {
 				version: "0.1.0",
 				description: "Turn any website into a typed API",
 				tools: ["scout", "worker", "heal"],
+				mcp: "/mcp",
 				docs: "https://unsurf.coey.dev",
 			});
 		}
 
-		// Tool routes
+		// MCP endpoint
+		if (url.pathname === "/mcp") {
+			return handleMcpRequest(request, env);
+		}
+
+		// Tool routes (REST API)
 		if (request.method === "POST" && url.pathname.startsWith("/tools/")) {
 			try {
 				const body = await request.json();
