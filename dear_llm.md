@@ -56,11 +56,11 @@ src/
 - **Name**: `unsurf` on NPM
 - **Version**: 0.1.0
 - **Entry**: `dist/index.js` (ESM), `dist/index.d.ts` (types)
-- **Exports**: 36 public symbols — tools, services, domain types, utilities, db
+- **Exports**: 38 public symbols — tools, services, domain types, utilities, db, MCP
 - **Build**: `bun run build` (tsup)
 - **Prepublish**: `bun run prepublishOnly` → check + typecheck + test + build
 - **Files included**: `dist/`, `src/` (excluding `cf-worker.ts`)
-- **External deps**: effect, @effect/platform, @effect/schema, drizzle-orm, @cloudflare/puppeteer
+- **External deps**: effect, @effect/platform, @effect/schema, drizzle-orm, @cloudflare/puppeteer, @modelcontextprotocol/sdk, zod
 
 ## Live Deployment
 
@@ -101,10 +101,11 @@ src/
 | CI | ✅ | check → docs → deploy pipeline |
 | Docs | ✅ | https://unsurf.coey.dev |
 | NPM publish | ✅ | v0.1.0 live on npmjs.com |
+| MCP server | ✅ | Streamable HTTP at /mcp, 3 tools registered |
 
 ### What remains (future)
 
-1. **MCP server** (PLAN.md Phase 8) — Not implemented. The README mentions MCP but the current API is plain HTTP POST. Adding an MCP transport layer (stdio or SSE) is a future enhancement.
+1. ~~**MCP server**~~ — **Done.** Phase 8 complete. MCP Streamable HTTP at `/mcp` using `@modelcontextprotocol/sdk`. Stateless mode. All 3 tools registered with Zod input schemas.
 2. **LLM Scout Agent** (PLAN.md Phase 9) — Not implemented. `src/ai/` not built. Future enhancement where an LLM decides what to click/fill during scouting using `@effect/ai`.
 3. **TypeScript client codegen** — `src/lib/codegen.ts` referenced in README/PLAN.md but not built.
 4. **E2E smoke test** — POST /tools/scout against live URL with a real site. Browser Rendering may require CF Workers Paid plan.
