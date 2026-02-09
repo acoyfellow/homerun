@@ -41,6 +41,20 @@ Agent                     unsurf                        Target Site
 
 ## Quick start
 
+### As a library
+
+```bash
+npm install unsurf
+```
+
+```typescript
+import { scout, worker, heal } from "unsurf";
+import { makeSchemaInferrer, makeOpenApiGenerator } from "unsurf";
+import { Browser, Store, SchemaInferrer, OpenApiGenerator } from "unsurf";
+```
+
+### Self-hosted (Cloudflare Worker)
+
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/acoyfellow/unsurf)
 
 Or manually:
@@ -49,8 +63,10 @@ Or manually:
 git clone https://github.com/acoyfellow/unsurf
 cd unsurf
 bun install
-bun run dev
+CLOUDFLARE_API_TOKEN=your-token ALCHEMY_PASSWORD=your-password bun run deploy
 ```
+
+Live instance: [`https://unsurf.coy.workers.dev`](https://unsurf.coy.workers.dev)
 
 ## MCP Tools
 
@@ -130,8 +146,10 @@ Every operation in unsurf can fail. Browsers crash. Sites change. Networks drop.
 ```
 unsurf/
 ├── alchemy.run.ts                # Infrastructure as code (D1, R2, Worker, Browser)
+├── tsup.config.ts                # Build config for NPM package
 ├── src/
-│   ├── index.ts                  # Worker entry point
+│   ├── index.ts                  # NPM package barrel export
+│   ├── cf-worker.ts              # Cloudflare Worker entry point
 │   ├── Api.ts                    # HttpApi definition
 │   ├── ApiLive.ts                # HttpApiBuilder implementation
 │   ├── domain/                   # Effect Schema definitions

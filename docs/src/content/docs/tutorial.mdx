@@ -6,15 +6,31 @@ description: Deploy unsurf and capture your first API in 5 minutes.
 import { Steps, Aside } from '@astrojs/starlight/components';
 import SourceCode from '../../components/SourceCode.astro';
 
-We will deploy unsurf to your Cloudflare account and use the **scout** tool to capture every API endpoint on a public website. By the end, you will have a complete OpenAPI spec generated automatically.
+unsurf works two ways: as an **NPM package** you import into your own code, or as a **self-hosted Cloudflare Worker**. This tutorial covers both.
 
-## Prerequisites
+## Install the package
 
-- A [Cloudflare account](https://dash.cloudflare.com/sign-up)
+```bash
+npm install unsurf
+# or
+bun add unsurf
+```
+
+```typescript
+import { scout, worker, heal, makeSchemaInferrer, makeOpenApiGenerator } from "unsurf";
+```
+
+The package exports all three tools, service interfaces for dependency injection, domain types, and utilities. See the [API reference](/reference/tools/) for details.
+
+## Self-hosted: deploy to Cloudflare
+
+To run your own unsurf instance with Browser Rendering, D1, and R2:
+
+### Prerequisites
+
+- A [Cloudflare account](https://dash.cloudflare.com/sign-up) (Workers Paid plan for Browser Rendering)
 - [Bun](https://bun.sh) installed
-- An API key from Cloudflare (for Alchemy deployment)
-
-## Deploy
+- A Cloudflare API token
 
 <Steps>
 
@@ -35,7 +51,7 @@ We will deploy unsurf to your Cloudflare account and use the **scout** tool to c
 3. **Deploy to Cloudflare**
 
    ```bash
-   bun run deploy
+   CLOUDFLARE_API_TOKEN=your-token bun run deploy
    ```
 
    Alchemy will create your D1 database, R2 bucket, and Browser Rendering binding automatically. You will see a URL in the output — that is your unsurf instance.
@@ -49,7 +65,7 @@ Now we will capture the API behind [JSONPlaceholder](https://jsonplaceholder.typ
 Set your deployed URL as an environment variable (shown in the `bun run deploy` output):
 
 ```bash
-export UNSURF_URL="https://unsurf.<your-subdomain>.workers.dev"
+export UNSURF_URL="https://unsurf.coy.workers.dev"
 ```
 
 <Steps>
