@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════
+   unsurf — the version that got screenshotted before the firing
+   ═══════════════════════════════════════════════════════════ */
+
 /* Self-hosted Google Sans Flex + Google Sans Code */
 @font-face {
   font-family: 'Google Sans Flex';
@@ -18,33 +22,66 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/* ── shared tokens ── */
 :root {
   --sl-font: 'Google Sans Flex', system-ui, sans-serif;
   --sl-font-mono: 'Google Sans Code', monospace;
   --sl-nav-height: 4rem;
+  --sl-border-radius: 0;
+  --sl-color-accent-low: #ddd6fe;
+  --sl-color-accent: #4f46e5;
+  --sl-color-accent-high: #312e81;
+
+  --un-accent: #4f46e5;
+  --un-hot: #f43f5e;
+  --un-cyan: #22d3ee;
+  --un-glow: rgba(79, 70, 229, 0.4);
+  --un-glow-hot: rgba(244, 63, 94, 0.35);
+  --un-glow-cyan: rgba(34, 211, 238, 0.25);
 }
 
-/* Dark mode: the only mode that matters */
+/* ── light mode ── */
 :root[data-theme='light'] {
   --sl-color-bg: #fafafa;
-  --sl-color-bg-nav: #ffffff;
-  --sl-color-bg-sidebar: #f9fafb;
+  --sl-color-bg-nav: rgba(255, 255, 255, 0.85);
+  --sl-color-bg-sidebar: #f5f5f5;
+  --sl-color-hairline: #e5e5e5;
+  --sl-color-hairline-light: #f0f0f0;
+  --sl-color-accent-low: #ede9fe;
+  --sl-color-accent-high: #312e81;
+
+  --un-line: #e5e5e5;
+  --un-dim: #888;
+  --un-mute: #999;
+  --un-text: #1a1a1a;
+  --un-surface: #f0f0f0;
 }
 
+/* ── dark mode ── */
 :root[data-theme='dark'] {
   --sl-color-bg: #0a0a0a;
-  --sl-color-bg-nav: #0a0a0a;
+  --sl-color-bg-nav: rgba(10, 10, 10, 0.85);
   --sl-color-bg-sidebar: #0f0f0f;
   --sl-color-hairline: #1a1a1a;
   --sl-color-hairline-light: #141414;
+  --sl-color-accent-low: #1a1640;
+  --sl-color-accent-high: #c7c3ff;
+
+  --un-line: #1a1a1a;
+  --un-dim: #444;
+  --un-mute: #666;
+  --un-text: #e8e8e8;
+  --un-surface: #111;
 }
 
-/* Sharp corners everywhere */
-:root {
-  --sl-border-radius: 0;
+/* ── nav bar ── */
+header.header {
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--sl-color-hairline) !important;
 }
 
-/* Code blocks: precision */
+/* sharp corners everywhere */
 pre {
   border: 1px solid var(--sl-color-hairline) !important;
   border-radius: 0 !important;
@@ -54,7 +91,6 @@ code {
   border-radius: 0 !important;
 }
 
-/* Links: electric blue, no underline until hover */
 a {
   text-decoration: none;
 }
@@ -63,20 +99,11 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Sidebar: weight */
 nav.sidebar {
   border-right: 1px solid var(--sl-color-hairline);
 }
 
-/* Hero title: impact */
-.hero-title {
-  font-size: 4rem;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-
-/* Buttons: deliberate */
+/* buttons: sharp + uppercase everywhere */
 .sl-link-button {
   border-radius: 0 !important;
   font-weight: 600;
@@ -90,34 +117,362 @@ nav.sidebar {
   transform: translateY(-1px);
 }
 
-/* Hero snippet: full width, aligned with hero */
+
+/* ═══════════════════════════════════════════════════════════
+   SPLASH PAGE ONLY — forced dark, full send
+   ═══════════════════════════════════════════════════════════ */
+
+/* force dark on splash regardless of toggle */
+:root[data-has-hero] {
+  --sl-color-bg: #050505;
+  --sl-color-bg-nav: rgba(5, 5, 5, 0.6);
+  --sl-color-hairline: #1a1a1a;
+  --sl-color-text: #e8e8e8;
+  --sl-color-white: #f5f5f5;
+  --sl-color-gray-1: #e0e0e0;
+  --sl-color-gray-2: #aaa;
+  --sl-color-gray-3: #666;
+  --sl-color-gray-4: #333;
+  --sl-color-gray-5: #1a1a1a;
+  --sl-color-gray-6: #111;
+  --un-line: #1a1a1a;
+  --un-dim: #444;
+  --un-mute: #666;
+  --un-text: #e8e8e8;
+  --un-surface: #111;
+  color-scheme: dark;
+}
+
+/* hide theme toggle on splash — it's always dark */
+:root[data-has-hero] starlight-theme-select {
+  display: none !important;
+}
+
+/* splash nav: transparent glass */
+:root[data-has-hero] header.header {
+  background: rgba(5, 5, 5, 0.5) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* ── background: breathing grid ── */
+:root[data-has-hero] main {
+  background:
+    linear-gradient(180deg, #050505 0%, #080812 40%, #0a0a18 70%, #050505 100%),
+    #050505 !important;
+  position: relative;
+  overflow: hidden;
+}
+
+:root[data-has-hero] main::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(#1a1a1a 1px, transparent 1px),
+    linear-gradient(90deg, #1a1a1a 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.3;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: gridPulse 8s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+}
+
+/* ── floating orb ── */
+:root[data-has-hero] main::after {
+  content: '';
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--un-glow) 0%, transparent 70%);
+  top: -100px;
+  right: -200px;
+  pointer-events: none;
+  z-index: 0;
+  animation: orbFloat 12s ease-in-out infinite;
+  filter: blur(80px);
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-60px, 40px) scale(1.1); }
+  66% { transform: translate(30px, -30px) scale(0.95); }
+}
+
+:root[data-has-hero] .sl-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── HERO ── */
+:root[data-has-hero] .hero {
+  padding: 12vh 0 4rem !important;
+  min-height: 70vh;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+/* title: the thing you screenshot */
+.hero-title {
+  font-size: clamp(5rem, 14vw, 11rem);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  background: linear-gradient(
+    135deg,
+    #f5f5f5 0%,
+    #f5f5f5 40%,
+    var(--un-cyan) 60%,
+    var(--un-accent) 80%,
+    var(--un-hot) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 8s ease-in-out infinite;
+  filter: drop-shadow(0 0 60px var(--un-glow))
+          drop-shadow(0 0 120px var(--un-glow-cyan));
+  position: relative;
+}
+
+.hero-title::after {
+  content: '\2588';
+  -webkit-text-fill-color: var(--un-cyan);
+  animation: cursorBlink 1s step-end infinite;
+  font-size: 0.6em;
+  margin-left: 0.05em;
+  vertical-align: baseline;
+  opacity: 0.7;
+  filter: drop-shadow(0 0 10px var(--un-cyan));
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0; }
+}
+
+/* tagline */
+:root[data-has-hero] .hero .tagline {
+  font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+  color: #666;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  margin-top: 1.5rem;
+  animation: fadeSlideUp 1s ease 0.3s both;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── splash buttons ── */
+:root[data-has-hero] .sl-link-button {
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  padding: 0.9em 2em !important;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: fadeSlideUp 1s ease 0.5s both;
+}
+
+:root[data-has-hero] .sl-link-button.primary {
+  background: #f5f5f5 !important;
+  color: #050505 !important;
+  border: none !important;
+}
+
+:root[data-has-hero] .sl-link-button.primary:hover {
+  background: var(--un-cyan) !important;
+  color: #050505 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px var(--un-glow-cyan), 0 10px 40px rgba(0,0,0,0.5);
+  text-decoration: none;
+}
+
+:root[data-has-hero] .sl-link-button.minimal {
+  color: #444 !important;
+  border: 1px solid #1a1a1a !important;
+}
+
+:root[data-has-hero] .sl-link-button.minimal:hover {
+  color: #f5f5f5 !important;
+  border-color: #666 !important;
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+/* ── code snippet: the terminal ── */
 .hero-snippet {
-  margin: 0 0 2rem;
+  margin: 0 0 4rem;
   text-align: left;
+  animation: fadeSlideUp 1s ease 0.7s both;
+  position: relative;
+}
+
+.hero-snippet .starlight-tabs {
+  border: 1px solid #1a1a1a !important;
+  background: rgba(10, 10, 10, 0.8) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.hero-snippet .starlight-tabs [role="tablist"] {
+  gap: 0;
+  background: rgba(255,255,255,0.02) !important;
+  border-bottom: 1px solid #1a1a1a !important;
+  padding: 0 !important;
+}
+
+.hero-snippet .starlight-tabs [role="tab"] {
+  color: #444 !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.8em 1.5em !important;
+  border: none !important;
+  transition: all 0.2s ease;
+}
+
+.hero-snippet .starlight-tabs [role="tab"][aria-selected="true"] {
+  color: var(--un-cyan) !important;
+  background: rgba(34, 211, 238, 0.05) !important;
+  box-shadow: inset 0 -2px 0 var(--un-cyan) !important;
 }
 
 .hero-snippet pre {
-  font-size: 0.85rem !important;
-  line-height: 1.6 !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 0.8rem !important;
+  line-height: 1.7 !important;
+  margin: 0 !important;
+  padding: 1.5rem !important;
 }
 
-/* Tab labels: tighter */
-.hero-snippet .starlight-tabs [role="tablist"] {
-  gap: 0;
+.hero-snippet pre code {
+  color: #444 !important;
 }
 
-/* Reduce gap between hero and content */
-.hero {
-  padding-bottom: 1rem !important;
+/* scan lines */
+.hero-snippet .starlight-tabs::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255,255,255,0.008) 2px,
+    rgba(255,255,255,0.008) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
 }
 
-/* Cards: responsive grid — 1 col mobile, 2 cols on wide screens */
-.card-grid {
+/* ── cards: the arsenal ── */
+:root[data-has-hero] .card-grid {
+  grid-template-columns: 1fr !important;
+  gap: 1px !important;
+  background: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  animation: fadeSlideUp 1s ease 0.9s both;
+}
+
+@media (min-width: 768px) {
+  :root[data-has-hero] .card-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 1100px) {
+  :root[data-has-hero] .card-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+:root[data-has-hero] .card-grid > .card {
+  background: #050505 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 2rem !important;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+}
+
+:root[data-has-hero] .card-grid > .card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--un-accent), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+:root[data-has-hero] .card-grid > .card:hover {
+  background: #111 !important;
+}
+
+:root[data-has-hero] .card-grid > .card:hover::before {
+  opacity: 1;
+}
+
+:root[data-has-hero] .card-grid > .card:hover .icon {
+  filter: drop-shadow(0 0 8px var(--un-glow-cyan));
+}
+
+/* ── docs pages: responsive card grid ── */
+body:not(:root[data-has-hero]) .card-grid {
   grid-template-columns: 1fr !important;
 }
 
 @media (min-width: 768px) {
-  .card-grid {
+  body:not(:root[data-has-hero]) .card-grid {
     grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── splash footer ── */
+:root[data-has-hero] footer {
+  background: transparent !important;
+  border-top: 1px solid #1a1a1a;
+}
+
+/* ── splash page fade in ── */
+:root[data-has-hero] .sl-container {
+  animation: pageIn 0.8s ease both;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── mobile adjustments ── */
+@media (max-width: 768px) {
+  :root[data-has-hero] .hero {
+    padding: 8vh 0 2rem !important;
+    min-height: auto;
+  }
+
+  .hero-title {
+    font-size: clamp(3.5rem, 18vw, 6rem);
   }
 }
