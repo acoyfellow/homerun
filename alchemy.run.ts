@@ -17,6 +17,7 @@ export const WORKER = await Worker("unsurf", {
 	name: "unsurf",
 	entrypoint: "./src/cf-worker.ts",
 	bindings: { DB, STORAGE, BROWSER },
+	compatibility: "node",
 	url: true,
 	adopt: true,
 });
