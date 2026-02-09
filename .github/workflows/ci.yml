@@ -51,8 +51,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
       - name: Smoke test
-        if: vars.WORKER_URL != ''
         run: |
           sleep 5
-          curl -sf "${{ vars.WORKER_URL }}/" | jq .name | grep -q unsurf
-        continue-on-error: true
+          curl -sf https://unsurf.coy.workers.dev/ | jq .name | grep -q unsurf
