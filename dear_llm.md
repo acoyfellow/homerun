@@ -16,7 +16,7 @@ Three MCP tools: **Scout** (explore + capture), **Worker** (replay API directly)
 - **D1** + **R2** — storage
 - **tsup** — build tool for NPM package (ESM + DTS)
 - **Biome** — lint + format (tabs, 100 line width). Ignores: `docs/`, `migrations/`
-- **Vitest** — 75 tests across 8 files
+- **Vitest** — 94 tests across 10 files
 - **Astro Starlight** — docs site at https://unsurf.coey.dev
 
 ## Architecture
@@ -25,10 +25,8 @@ Every service is a `Context.Tag` with a live impl (CF bindings) and a test impl 
 
 ```
 src/
-├── index.ts                  # NPM package barrel export (36 exports)
+├── index.ts                  # NPM package barrel export
 ├── cf-worker.ts              # CF Worker entry point (routing, CORS, layer building)
-├── Api.ts                    # HttpApi definition (schema for scout/worker/heal)
-├── ApiLive.ts                # HttpApiBuilder handlers (reference, not used in routing)
 ├── domain/                   # Effect Schema definitions
 │   ├── Endpoint.ts           # CapturedEndpoint
 │   ├── Path.ts               # ScoutedPath + PathStep
@@ -56,7 +54,8 @@ src/
 - **Name**: `unsurf` on NPM
 - **Version**: 0.1.0
 - **Entry**: `dist/index.js` (ESM), `dist/index.d.ts` (types)
-- **Exports**: 45+ public symbols (tools, services, domain, MCP, AI agent, codegen) — tools, services, domain types, utilities, db, MCP, AI agent
+- **Exports**: 45+ public symbols (tools, services, domain, MCP, AI agent, codegen)
+- **Examples**: `examples/` directory with 7 runnable files importing from unsurf, tested by `test/examples.test.ts`
 - **Build**: `bun run build` (tsup)
 - **Prepublish**: `bun run prepublishOnly` → check + typecheck + test + build
 - **Files included**: `dist/`, `src/` (excluding `cf-worker.ts`)
@@ -80,7 +79,7 @@ src/
 
 ## Status
 
-**All phases complete (1-10).** 79 tests passing across 9 files. Worker deployed. NPM package published. MCP server live. AI agent built.
+**All phases complete (1-10).** 94 tests passing across 10 files. Worker deployed. NPM package published. MCP server live. AI agent built. Docs fully restructured (Diátaxis + agent-first). Self-hosted Google Sans Flex/Code fonts. 7 dogfooded examples with CI gate.
 
 | Layer | State | Details |
 |---|---|---|
@@ -94,12 +93,12 @@ src/
 | Worker tool | ✅ | Direct HTTP replay, smart endpoint selection |
 | Heal tool | ✅ | Retry w/ backoff → re-scout → retry |
 | Entry point | ✅ | Routes, CORS, layer building, errors |
-| Tests | ✅ | 75 passing, 8 files |
+| Tests | ✅ | 94 passing, 10 files |
 | Lint/Types | ✅ | Biome + tsc clean |
 | NPM package | ✅ | tsup build, barrel export, 36 symbols |
 | CF deploy | ✅ | https://unsurf.coy.workers.dev |
 | CI | ✅ | check → docs → deploy pipeline |
-| Docs | ✅ | https://unsurf.coey.dev |
+| Docs | ✅ | https://unsurf.coey.dev — 11 pages, Diátaxis, agent-first |
 | NPM publish | ✅ | v0.1.0 live on npmjs.com |
 | MCP server | ✅ | Streamable HTTP at /mcp, 3 tools (+ agent-scout with API key) |
 | AI Scout Agent | ✅ | LlmProvider interface, Anthropic adapter, 4 tests |
@@ -109,10 +108,13 @@ src/
 1. ~~**MCP server**~~ — **Done.** Phase 8 complete. MCP Streamable HTTP at `/mcp` using `@modelcontextprotocol/sdk`. Stateless mode. All 3 tools registered with Zod input schemas.
 2. ~~**LLM Scout Agent**~~ — **Done.** Phase 9 complete. `src/ai/ScoutAgent.ts` with `LlmProvider` interface + `AnthropicProvider`. MCP `agent-scout` tool when `ANTHROPIC_API_KEY` is set. 4 tests.
 3. ~~**TypeScript client codegen**~~ — **Done.** `src/lib/codegen.ts` — `generateClient(spec)` → typed fetch client string.
-4. **E2E smoke test** — POST /tools/scout against live URL with a real site. Browser Rendering may require CF Workers Paid plan.
-5. **HttpApiSwagger** — PLAN.md Phase 1 mentions Swagger UI at `/docs`, not implemented. Current worker uses manual routing in `cf-worker.ts`.
-6. **API Gallery** — Jan Wilmake (@janwilmake) suggested: a public GitHub repo or docs page that auto-updates with every API unsurf discovers. Living registry of "unsurfed" APIs with their OpenAPI specs.
-7. **Docs OG images + SEO** — Done. Dynamic per-page OG images via sharp, custom Head component with twitter cards + JSON-LD.
+4. ~~**Docs OG images + SEO**~~ — **Done.** Dynamic per-page OG images via sharp with embedded Google Sans Flex/Code TTF fonts (base64 in SVG). Custom Head component with twitter cards + JSON-LD.
+5. ~~**Diátaxis docs restructure**~~ — **Done.** 11 pages across all 4 quadrants. 2 new agent-first pages (guides/agent-integration, concepts/agent-patterns). Config reference expanded from stub to full reference. Tutorial completes Scout→Worker→Heal→MCP loop.
+6. ~~**Dogfooded examples**~~ — **Done.** 7 example files in `examples/` importing from unsurf, tested by `test/examples.test.ts` (15 tests). Docs embed examples via SourceCode component — if any export changes, build breaks.
+7. ~~**Font branding**~~ — **Done.** Google Sans Flex (body) + Google Sans Code (mono). Self-hosted woff2 + TTF in `docs/public/fonts/`. No CDN dependency.
+8. **E2E smoke test** — POST /tools/scout against live URL with a real site. Browser Rendering requires CF Workers Paid plan.
+9. **HttpApiSwagger** — PLAN.md Phase 1 mentions Swagger UI at `/docs`, not implemented. Current worker uses manual routing in `cf-worker.ts`. Low priority — REST API is documented in reference/config.mdx.
+10. **API Gallery** — Jan Wilmake (@janwilmake) suggested: a public GitHub repo or docs page that auto-updates with every API unsurf discovers. Living registry of "unsurfed" APIs with their OpenAPI specs. Think of it as a community-contributed catalog of unsurfed sites — each entry is a site URL, its OpenAPI spec (generated by scout), and metadata. Could be a JSON file in a repo, a searchable docs page, or even its own CF Worker. The key value: agents can search the gallery before scouting, reusing specs others already captured. Deduplication at the community level.
 
 ### Known issues
 
