@@ -3,19 +3,20 @@ import { describe, expect, it } from "vitest";
 import { Store, makeTestStore } from "../src/services/Store.js";
 
 const store = makeTestStore();
-const run = <A, E>(effect: Effect.Effect<A, E, never>) =>
-	Effect.runPromise(effect);
+const run = <A, E>(effect: Effect.Effect<A, E, never>) => Effect.runPromise(effect);
 
 describe("Store", () => {
 	describe("sites", () => {
 		it("saves and retrieves a site", async () => {
-			await run(store.saveSite({
-				id: "site-1",
-				url: "https://example.com",
-				domain: "example.com",
-				firstScoutedAt: "2025-01-01T00:00:00Z",
-				lastScoutedAt: "2025-01-01T00:00:00Z",
-			}));
+			await run(
+				store.saveSite({
+					id: "site-1",
+					url: "https://example.com",
+					domain: "example.com",
+					firstScoutedAt: "2025-01-01T00:00:00Z",
+					lastScoutedAt: "2025-01-01T00:00:00Z",
+				}),
+			);
 
 			const site = await run(store.getSite("site-1"));
 			expect(site.id).toBe("site-1");
@@ -29,21 +30,25 @@ describe("Store", () => {
 		});
 
 		it("upserts on save", async () => {
-			await run(store.saveSite({
-				id: "site-upsert",
-				url: "https://test.com",
-				domain: "test.com",
-				firstScoutedAt: "2025-01-01T00:00:00Z",
-				lastScoutedAt: "2025-01-01T00:00:00Z",
-			}));
+			await run(
+				store.saveSite({
+					id: "site-upsert",
+					url: "https://test.com",
+					domain: "test.com",
+					firstScoutedAt: "2025-01-01T00:00:00Z",
+					lastScoutedAt: "2025-01-01T00:00:00Z",
+				}),
+			);
 
-			await run(store.saveSite({
-				id: "site-upsert",
-				url: "https://test.com",
-				domain: "test.com",
-				firstScoutedAt: "2025-01-01T00:00:00Z",
-				lastScoutedAt: "2025-02-01T00:00:00Z",
-			}));
+			await run(
+				store.saveSite({
+					id: "site-upsert",
+					url: "https://test.com",
+					domain: "test.com",
+					firstScoutedAt: "2025-01-01T00:00:00Z",
+					lastScoutedAt: "2025-02-01T00:00:00Z",
+				}),
+			);
 
 			const site = await run(store.getSite("site-upsert"));
 			expect(site.lastScoutedAt).toBe("2025-02-01T00:00:00Z");
@@ -52,43 +57,49 @@ describe("Store", () => {
 
 	describe("endpoints", () => {
 		it("saves and retrieves endpoints by site", async () => {
-			await run(store.saveSite({
-				id: "site-ep",
-				url: "https://api.example.com",
-				domain: "api.example.com",
-				firstScoutedAt: "2025-01-01T00:00:00Z",
-				lastScoutedAt: "2025-01-01T00:00:00Z",
-			}));
+			await run(
+				store.saveSite({
+					id: "site-ep",
+					url: "https://api.example.com",
+					domain: "api.example.com",
+					firstScoutedAt: "2025-01-01T00:00:00Z",
+					lastScoutedAt: "2025-01-01T00:00:00Z",
+				}),
+			);
 
-			await run(store.saveEndpoints([
-				{
-					id: "ep-1",
-					siteId: "site-ep",
-					method: "GET" as const,
-					pathPattern: "/users/:id",
-					requestSchema: undefined,
-					responseSchema: { type: "object" },
-					sampleCount: 3,
-					firstSeenAt: "2025-01-01T00:00:00Z",
-					lastSeenAt: "2025-01-01T00:00:00Z",
-				} as any,
-				{
-					id: "ep-2",
-					siteId: "site-ep",
-					method: "POST" as const,
-					pathPattern: "/users",
-					requestSchema: { type: "object" },
-					responseSchema: { type: "object" },
-					sampleCount: 1,
-					firstSeenAt: "2025-01-01T00:00:00Z",
-					lastSeenAt: "2025-01-01T00:00:00Z",
-				} as any,
-			]));
+			await run(
+				store.saveEndpoints([
+					{
+						id: "ep-1",
+						siteId: "site-ep",
+						method: "GET" as const,
+						pathPattern: "/users/:id",
+						requestSchema: undefined,
+						responseSchema: { type: "object" },
+						sampleCount: 3,
+						firstSeenAt: "2025-01-01T00:00:00Z",
+						lastSeenAt: "2025-01-01T00:00:00Z",
+						// biome-ignore lint/suspicious/noExplicitAny: test data doesn't need Option wrappers
+					} as any,
+					{
+						id: "ep-2",
+						siteId: "site-ep",
+						method: "POST" as const,
+						pathPattern: "/users",
+						requestSchema: { type: "object" },
+						responseSchema: { type: "object" },
+						sampleCount: 1,
+						firstSeenAt: "2025-01-01T00:00:00Z",
+						lastSeenAt: "2025-01-01T00:00:00Z",
+						// biome-ignore lint/suspicious/noExplicitAny: test data doesn't need Option wrappers
+					} as any,
+				]),
+			);
 
 			const eps = await run(store.getEndpoints("site-ep"));
 			expect(eps).toHaveLength(2);
-			expect(eps[0]!.pathPattern).toBe("/users/:id");
-			expect(eps[1]!.method).toBe("POST");
+			expect(eps[0]?.pathPattern).toBe("/users/:id");
+			expect(eps[1]?.method).toBe("POST");
 		});
 
 		it("returns empty array for unknown site", async () => {
@@ -99,17 +110,20 @@ describe("Store", () => {
 
 	describe("paths", () => {
 		it("saves and retrieves a path", async () => {
-			await run(store.savePath({
-				id: "path-1",
-				siteId: "site-1",
-				task: "find contact form",
-				steps: [{ action: "navigate" as const, url: "https://example.com/contact" }],
-				endpointIds: ["ep-1"],
-				status: "active" as const,
-				createdAt: "2025-01-01T00:00:00Z",
-				failCount: 0,
-				healCount: 0,
-			} as any));
+			await run(
+				store.savePath({
+					id: "path-1",
+					siteId: "site-1",
+					task: "find contact form",
+					steps: [{ action: "navigate" as const, url: "https://example.com/contact" }],
+					endpointIds: ["ep-1"],
+					status: "active" as const,
+					createdAt: "2025-01-01T00:00:00Z",
+					failCount: 0,
+					healCount: 0,
+					// biome-ignore lint/suspicious/noExplicitAny: test data doesn't need Option wrappers
+				} as any),
+			);
 
 			const path = await run(store.getPath("path-1"));
 			expect(path.id).toBe("path-1");
@@ -136,7 +150,7 @@ describe("Store", () => {
 
 			const result = await run(store.getBlob("test-key"));
 			expect(result).not.toBeNull();
-			expect(new TextDecoder().decode(result!)).toBe("hello world");
+			expect(new TextDecoder().decode(result ?? new Uint8Array())).toBe("hello world");
 		});
 
 		it("returns null for missing blob", async () => {
@@ -147,15 +161,17 @@ describe("Store", () => {
 
 	describe("runs", () => {
 		it("saves a run", async () => {
-			await run(store.saveRun({
-				id: "run-1",
-				pathId: "path-1",
-				tool: "scout",
-				status: "success",
-				input: JSON.stringify({ url: "https://example.com" }),
-				output: JSON.stringify({ endpointCount: 5 }),
-				createdAt: "2025-01-01T00:00:00Z",
-			}));
+			await run(
+				store.saveRun({
+					id: "run-1",
+					pathId: "path-1",
+					tool: "scout",
+					status: "success",
+					input: JSON.stringify({ url: "https://example.com" }),
+					output: JSON.stringify({ endpointCount: 5 }),
+					createdAt: "2025-01-01T00:00:00Z",
+				}),
+			);
 			// No error = success
 		});
 	});

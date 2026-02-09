@@ -35,13 +35,7 @@ unsurf uses [Drizzle ORM](https://orm.drizzle.team) with SQLite (D1). The comple
 
 <SourceCode file="src/db/schema.ts" />
 
-Generate migrations after schema changes:
-
-```bash
-bunx drizzle-kit generate
-```
-
-Migrations are applied automatically by Alchemy on deploy.
+Migrations are applied automatically by Alchemy on deploy — no manual migration steps are needed.
 
 ## Scripts
 
@@ -49,7 +43,7 @@ Migrations are applied automatically by Alchemy on deploy.
 |---|---|
 | `bun run dev` | Local development via Alchemy |
 | `bun run deploy` | Deploy to Cloudflare |
-| `bun run generate` | Generate Drizzle migrations |
+| `bun run generate` | Generate Drizzle migrations (internal dev workflow — not needed for deployment) |
 | `bun run test` | Run test suite |
 | `bun run check` | Lint and format (Biome) |
 | `bun run typecheck` | TypeScript type checking |

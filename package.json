@@ -16,10 +16,11 @@
 		"lint": "bun run check && bun run typecheck"
 	},
 	"dependencies": {
-		"effect": "^3.19.16",
+		"@cloudflare/puppeteer": "^1.0.6",
 		"@effect/platform": "^0.94.3",
 		"@effect/schema": "^0.75.5",
-		"drizzle-orm": "^0.44.2"
+		"drizzle-orm": "^0.44.2",
+		"effect": "^3.19.16"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",

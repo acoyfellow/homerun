@@ -1,8 +1,4 @@
 import { Context, Effect, Layer, Option } from "effect";
-import type { CapturedEndpoint } from "../domain/Endpoint.js";
-import { NotFoundError, StoreError } from "../domain/Errors.js";
-import type { ScoutedPath } from "../domain/Path.js";
-import type { Site } from "../domain/Site.js";
 import {
 	type Db,
 	createDb,
@@ -16,6 +12,10 @@ import {
 	upsertSite,
 } from "../db/queries.js";
 import type { NewRun } from "../db/schema.js";
+import type { CapturedEndpoint } from "../domain/Endpoint.js";
+import { NotFoundError, StoreError } from "../domain/Errors.js";
+import type { ScoutedPath } from "../domain/Path.js";
+import type { Site } from "../domain/Site.js";
 
 // ==================== Service Interface ====================
 
