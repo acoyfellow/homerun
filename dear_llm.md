@@ -65,10 +65,11 @@ src/
 ## Live Deployment
 
 - **Worker URL**: https://unsurf.coy.workers.dev
-- **D1 Database**: `unsurf-unsurf-db-exedev` (ID: `732baf90-e109-4875-b4a9-e668e54b1eea`)
-- **R2 Bucket**: `unsurf-unsurf-storage-exedev`
+- **Alchemy stage**: `production` (pinned in alchemy.run.ts, not hostname-derived)
+- **Alchemy state**: `CloudflareStateStore` (Durable Object on CF, used when `ALCHEMY_STATE_TOKEN` is set)
+- **D1 Database**: `unsurf-unsurf-db-production`
+- **R2 Bucket**: `unsurf-unsurf-storage-production`
 - **Compatibility**: `nodejs_compat`, `nodejs_compat_populate_process_env`
-- **Alchemy state**: `.alchemy/unsurf/exedev/`
 
 ## Conventions
 
@@ -99,20 +100,22 @@ src/
 | CF deploy | ✅ | https://unsurf.coy.workers.dev |
 | CI | ✅ | check → docs → deploy pipeline |
 | Docs | ✅ | https://unsurf.coey.dev |
-| NPM publish | ⏳ | v0.1.0 ready, needs OTP for 2FA |
+| NPM publish | ✅ | v0.1.0 live on npmjs.com |
 
 ### What remains (future)
 
-1. **MCP server** — Not yet implemented. The README mentions MCP but the current API is plain HTTP POST. Adding an MCP transport layer (stdio or SSE) is a future enhancement.
-2. **TypeScript client codegen** — `src/lib/codegen.ts` referenced in README but not built. Future.
-3. **LLM-guided scout** — `src/ai/` not built. Future enhancement where an LLM decides what to click/fill during scouting.
+1. **MCP server** (PLAN.md Phase 8) — Not implemented. The README mentions MCP but the current API is plain HTTP POST. Adding an MCP transport layer (stdio or SSE) is a future enhancement.
+2. **LLM Scout Agent** (PLAN.md Phase 9) — Not implemented. `src/ai/` not built. Future enhancement where an LLM decides what to click/fill during scouting using `@effect/ai`.
+3. **TypeScript client codegen** — `src/lib/codegen.ts` referenced in README/PLAN.md but not built.
 4. **E2E smoke test** — POST /tools/scout against live URL with a real site. Browser Rendering may require CF Workers Paid plan.
+5. **HttpApiSwagger** — PLAN.md Phase 1 mentions Swagger UI at `/docs`, not implemented. Current worker uses manual routing in `cf-worker.ts`.
 
 ### Known issues
 
 - Browser Rendering requires a paid Cloudflare Workers plan
-- CI `docs` and `deploy` jobs need GitHub secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `ALCHEMY_PASSWORD`
-- NPM publish requires 2FA OTP: `npm publish --otp=CODE`
+- CI `docs` and `deploy` jobs need 4 GitHub secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `ALCHEMY_PASSWORD`, `ALCHEMY_STATE_TOKEN`
+- Local `.alchemy/` directory has stale state from old `exedev` stage — can be deleted, production state lives in CloudflareStateStore
+- PLAN.md Phases 8 (MCP) and 9 (LLM Agent) were descoped from initial ship
 
 ## Links
 
