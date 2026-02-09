@@ -1,0 +1,242 @@
+import { Effect, Option } from "effect";
+import { CapturedEndpoint } from "../domain/Endpoint.js";
+import type { BrowserError } from "../domain/Errors.js";
+import type { StoreError } from "../domain/Errors.js";
+import type { NetworkEvent } from "../domain/NetworkEvent.js";
+import { isApiRequest } from "../domain/NetworkEvent.js";
+import { PathStep, ScoutedPath } from "../domain/Path.js";
+import { Site } from "../domain/Site.js";
+import { extractDomain, normalizeUrlPattern } from "../lib/url.js";
+import { Browser } from "../services/Browser.js";
+import { OpenApiGenerator } from "../services/OpenApiGenerator.js";
+import { SchemaInferrer } from "../services/SchemaInferrer.js";
+import { Store } from "../services/Store.js";
+
+// ==================== Types ====================
+
+export interface ScoutInput {
+	readonly url: string;
+	readonly task: string;
+}
+
+export interface ScoutResult {
+	readonly siteId: string;
+	readonly endpointCount: number;
+	readonly pathId: string;
+	readonly openApiSpec: Record<string, unknown>;
+}
+
+// ==================== Helpers ====================
+
+function generateId(prefix: string): string {
+	const rand = Math.random().toString(36).slice(2, 10);
+	const ts = Date.now().toString(36);
+	return `${prefix}_${ts}_${rand}`;
+}
+
+function nowISO(): string {
+	return new Date().toISOString();
+}
+
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
+
+const VALID_METHODS = new Set<string>(["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]);
+
+function isValidMethod(m: string): m is HttpMethod {
+	return VALID_METHODS.has(m.toUpperCase());
+}
+
+/** Group network events by normalized endpoint pattern */
+function groupByEndpoint(
+	events: ReadonlyArray<NetworkEvent>,
+): Map<string, { method: HttpMethod; pattern: string; events: NetworkEvent[] }> {
+	const groups = new Map<string, { method: HttpMethod; pattern: string; events: NetworkEvent[] }>();
+
+	for (const ev of events) {
+		if (!isApiRequest(ev.resourceType, ev.url)) continue;
+
+		const method = ev.method.toUpperCase();
+		if (!isValidMethod(method)) continue;
+
+		let pattern: string;
+		try {
+			pattern = normalizeUrlPattern(ev.url);
+		} catch {
+			continue; // Skip malformed URLs
+		}
+
+		const key = `${method} ${pattern}`;
+		const existing = groups.get(key);
+		if (existing) {
+			existing.events.push(ev);
+		} else {
+			groups.set(key, { method, pattern, events: [ev] });
+		}
+	}
+
+	return groups;
+}
+
+/** Try to parse a response body as JSON */
+function tryParseJson(body: string | undefined): unknown | undefined {
+	if (!body) return undefined;
+	try {
+		return JSON.parse(body);
+	} catch {
+		return undefined;
+	}
+}
+
+// ==================== Endpoint Building ====================
+
+interface EndpointGroup {
+	method: HttpMethod;
+	pattern: string;
+	events: NetworkEvent[];
+}
+
+function collectSamples(events: NetworkEvent[]): {
+	responseSamples: unknown[];
+	requestSamples: unknown[];
+} {
+	const responseSamples: unknown[] = [];
+	const requestSamples: unknown[] = [];
+
+	for (const ev of events) {
+		const resBody = tryParseJson(ev.responseBody);
+		if (resBody !== undefined) responseSamples.push(resBody);
+
+		const reqBody = tryParseJson(ev.requestBody);
+		if (reqBody !== undefined) requestSamples.push(reqBody);
+	}
+
+	return { responseSamples, requestSamples };
+}
+
+const buildEndpoint = (
+	group: EndpointGroup,
+	siteId: string,
+	now: string,
+): Effect.Effect<CapturedEndpoint, never, SchemaInferrer> =>
+	Effect.gen(function* () {
+		const inferrer = yield* SchemaInferrer;
+		const epId = generateId("ep");
+		const { responseSamples, requestSamples } = collectSamples(group.events);
+
+		const responseSchema =
+			responseSamples.length > 0 ? yield* inferrer.infer(responseSamples) : undefined;
+		const requestSchema =
+			requestSamples.length > 0 ? yield* inferrer.infer(requestSamples) : undefined;
+
+		return new CapturedEndpoint({
+			id: epId,
+			siteId,
+			method: group.method,
+			pathPattern: group.pattern,
+			requestSchema: requestSchema ? Option.some(requestSchema) : Option.none(),
+			responseSchema: responseSchema ? Option.some(responseSchema) : Option.none(),
+			sampleCount: group.events.length,
+			firstSeenAt: now,
+			lastSeenAt: now,
+		});
+	});
+
+// ==================== Persistence ====================
+
+const persistResults = (
+	site: Site,
+	endpoints: CapturedEndpoint[],
+	path: ScoutedPath,
+	openApiSpec: Record<string, unknown>,
+	screenshot: Uint8Array,
+	input: ScoutInput,
+): Effect.Effect<void, StoreError, Store> =>
+	Effect.gen(function* () {
+		const store = yield* Store;
+
+		yield* store.saveSite(site);
+
+		if (endpoints.length > 0) {
+			yield* store.saveEndpoints(endpoints);
+		}
+
+		yield* store.savePath(path);
+
+		yield* store.saveBlob(`screenshots/${site.id}/scout.png`, screenshot);
+
+		const specBytes = new TextEncoder().encode(JSON.stringify(openApiSpec, null, 2));
+		yield* store.saveBlob(`specs/${site.id}/openapi.json`, specBytes);
+
+		yield* store.saveRun({
+			id: generateId("run"),
+			pathId: path.id,
+			tool: "scout",
+			status: "success",
+			input: JSON.stringify({ url: input.url, task: input.task }),
+			output: JSON.stringify({
+				siteId: site.id,
+				endpointCount: endpoints.length,
+				pathId: path.id,
+			}),
+			createdAt: site.lastScoutedAt,
+		});
+	});
+
+// ==================== Scout Effect ====================
+
+export const scout = (
+	input: ScoutInput,
+): Effect.Effect<
+	ScoutResult,
+	BrowserError | StoreError,
+	Browser | Store | SchemaInferrer | OpenApiGenerator
+> =>
+	Effect.gen(function* () {
+		const browser = yield* Browser;
+		const openapi = yield* OpenApiGenerator;
+
+		const now = nowISO();
+		const siteId = generateId("site");
+
+		// 1. Navigate and capture network traffic
+		yield* browser.navigate(input.url);
+		const events = yield* browser.getNetworkEvents();
+		const screenshot = yield* browser.screenshot();
+
+		// 2. Group events and build endpoints
+		const grouped = groupByEndpoint(events);
+		const endpoints = yield* Effect.forEach([...grouped.values()], (group) =>
+			buildEndpoint(group, siteId, now),
+		);
+
+		// 3. Build domain objects
+		const site = new Site({
+			id: siteId,
+			url: input.url,
+			domain: extractDomain(input.url),
+			firstScoutedAt: now,
+			lastScoutedAt: now,
+		});
+
+		const pathId = generateId("path");
+		const path = new ScoutedPath({
+			id: pathId,
+			siteId,
+			task: input.task,
+			steps: [new PathStep({ action: "navigate", url: input.url })],
+			endpointIds: endpoints.map((ep) => ep.id),
+			status: "active",
+			createdAt: now,
+			lastUsedAt: Option.some(now),
+			failCount: 0,
+			healCount: 0,
+		});
+
+		// 4. Generate OpenAPI spec
+		const openApiSpec = yield* openapi.generate(input.url, endpoints);
+
+		// 5. Persist everything
+		yield* persistResults(site, [...endpoints], path, openApiSpec, screenshot, input);
+
+		return { siteId, endpointCount: endpoints.length, pathId, openApiSpec };
+	});
