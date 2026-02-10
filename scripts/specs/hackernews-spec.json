@@ -1,0 +1,322 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Hacker News Firebase API",
+    "version": "0.1.0",
+    "description": "Public Hacker News API powered by Firebase"
+  },
+  "servers": [
+    {
+      "url": "https://hacker-news.firebaseio.com"
+    }
+  ],
+  "paths": {
+    "/v0/topstories": {
+      "get": {
+        "operationId": "getTopStories",
+        "summary": "Get top story IDs",
+        "responses": {
+          "200": {
+            "description": "Array of top story item IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "maxItems": 500
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0/newstories": {
+      "get": {
+        "operationId": "getNewStories",
+        "summary": "Get newest story IDs",
+        "responses": {
+          "200": {
+            "description": "Array of new story item IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "maxItems": 500
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0/beststories": {
+      "get": {
+        "operationId": "getBestStories",
+        "summary": "Get best story IDs",
+        "responses": {
+          "200": {
+            "description": "Array of best story item IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "maxItems": 500
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0/askstories": {
+      "get": {
+        "operationId": "getAskStories",
+        "summary": "Get Ask HN story IDs",
+        "responses": {
+          "200": {
+            "description": "Array of Ask HN story item IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "maxItems": 200
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0/showstories": {
+      "get": {
+        "operationId": "getShowStories",
+        "summary": "Get Show HN story IDs",
+        "responses": {
+          "200": {
+            "description": "Array of Show HN story item IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "maxItems": 200
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0/jobstories": {
+      "get": {
+        "operationId": "getJobStories",
+        "summary": "Get job story IDs",
+        "responses": {
+          "200": {
+            "description": "Array of job story item IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "maxItems": 200
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0/item/{id}": {
+      "get": {
+        "operationId": "getItem",
+        "summary": "Get item by ID (story, comment, job, poll, or pollopt)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An item object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0/user/{id}": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get user by username",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A user object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Item": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique item ID"
+          },
+          "deleted": {
+            "type": "boolean",
+            "description": "True if the item is deleted"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "job",
+              "story",
+              "comment",
+              "poll",
+              "pollopt"
+            ]
+          },
+          "by": {
+            "type": "string",
+            "description": "Username of the author"
+          },
+          "time": {
+            "type": "integer",
+            "description": "Unix timestamp of creation"
+          },
+          "text": {
+            "type": "string",
+            "description": "HTML content for comments/ask posts"
+          },
+          "dead": {
+            "type": "boolean",
+            "description": "True if the item is dead"
+          },
+          "parent": {
+            "type": "integer",
+            "description": "Parent item ID (for comments)"
+          },
+          "poll": {
+            "type": "integer",
+            "description": "Associated poll ID (for pollopts)"
+          },
+          "kids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Child comment IDs in ranked order"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the story"
+          },
+          "score": {
+            "type": "integer",
+            "description": "Score/votes for the item"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the story, poll, or job"
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Poll option IDs (for polls)"
+          },
+          "descendants": {
+            "type": "integer",
+            "description": "Total comment count for stories/polls"
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Username (case-sensitive)"
+          },
+          "created": {
+            "type": "integer",
+            "description": "Unix timestamp of account creation"
+          },
+          "karma": {
+            "type": "integer",
+            "description": "User karma score"
+          },
+          "about": {
+            "type": "string",
+            "description": "HTML bio/description"
+          },
+          "submitted": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Item IDs submitted by user"
+          }
+        },
+        "required": [
+          "id",
+          "created",
+          "karma"
+        ]
+      }
+    }
+  }
+}

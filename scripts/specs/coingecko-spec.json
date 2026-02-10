@@ -1,0 +1,346 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CoinGecko API",
+    "version": "3.0.0",
+    "description": "Cryptocurrency data API"
+  },
+  "servers": [
+    { "url": "https://api.coingecko.com" }
+  ],
+  "paths": {
+    "/api/v3/coins/list": {
+      "get": {
+        "operationId": "listCoins",
+        "summary": "List all supported coins",
+        "responses": {
+          "200": {
+            "description": "Array of coins with id, symbol, and name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "symbol": { "type": "string" },
+                      "name": { "type": "string" }
+                    },
+                    "required": ["id", "symbol", "name"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/coins/{id}": {
+      "get": {
+        "operationId": "getCoin",
+        "summary": "Get coin data by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Coin detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CoinDetail" }
+              }
+            }
+          },
+          "404": { "description": "Coin not found" }
+        }
+      }
+    },
+    "/api/v3/coins/markets": {
+      "get": {
+        "operationId": "getMarkets",
+        "summary": "List coins with market data",
+        "parameters": [
+          { "name": "vs_currency", "in": "query", "required": true, "schema": { "type": "string", "default": "usd" } },
+          { "name": "ids", "in": "query", "schema": { "type": "string" } },
+          { "name": "order", "in": "query", "schema": { "type": "string", "default": "market_cap_desc" } },
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 100 } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of coins with market data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/MarketCoin" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/simple/price": {
+      "get": {
+        "operationId": "getSimplePrice",
+        "summary": "Get price of coins in given currencies",
+        "parameters": [
+          { "name": "ids", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Comma-separated coin IDs" },
+          { "name": "vs_currencies", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Comma-separated currency codes" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Price data keyed by coin ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/exchanges": {
+      "get": {
+        "operationId": "listExchanges",
+        "summary": "List exchanges",
+        "parameters": [
+          { "name": "per_page", "in": "query", "schema": { "type": "integer", "default": 100 } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of exchanges",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Exchange" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/exchanges/{id}": {
+      "get": {
+        "operationId": "getExchange",
+        "summary": "Get exchange by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exchange detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Exchange" }
+              }
+            }
+          },
+          "404": { "description": "Exchange not found" }
+        }
+      }
+    },
+    "/api/v3/search/trending": {
+      "get": {
+        "operationId": "getTrending",
+        "summary": "Get trending search coins",
+        "responses": {
+          "200": {
+            "description": "Trending coins",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "coins": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "item": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string" },
+                              "coin_id": { "type": "integer" },
+                              "name": { "type": "string" },
+                              "symbol": { "type": "string" },
+                              "market_cap_rank": { "type": ["integer", "null"] },
+                              "thumb": { "type": "string", "format": "uri" },
+                              "large": { "type": "string", "format": "uri" },
+                              "score": { "type": "integer" }
+                            },
+                            "required": ["id", "coin_id", "name", "symbol", "market_cap_rank", "thumb", "large", "score"]
+                          }
+                        },
+                        "required": ["item"]
+                      }
+                    }
+                  },
+                  "required": ["coins"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/global": {
+      "get": {
+        "operationId": "getGlobal",
+        "summary": "Get cryptocurrency global data",
+        "responses": {
+          "200": {
+            "description": "Global crypto market data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "active_cryptocurrencies": { "type": "integer" },
+                        "markets": { "type": "integer" },
+                        "total_market_cap": {
+                          "type": "object",
+                          "properties": {
+                            "usd": { "type": "number" }
+                          }
+                        },
+                        "total_volume": {
+                          "type": "object",
+                          "properties": {
+                            "usd": { "type": "number" }
+                          }
+                        },
+                        "market_cap_percentage": {
+                          "type": "object",
+                          "properties": {
+                            "btc": { "type": "number" },
+                            "eth": { "type": "number" }
+                          }
+                        },
+                        "updated_at": { "type": "integer" }
+                      },
+                      "required": ["active_cryptocurrencies", "markets", "total_market_cap", "total_volume", "market_cap_percentage", "updated_at"]
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CoinDetail": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "symbol": { "type": "string" },
+          "name": { "type": "string" },
+          "description": {
+            "type": "object",
+            "properties": {
+              "en": { "type": "string" }
+            }
+          },
+          "links": {
+            "type": "object",
+            "properties": {
+              "homepage": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "image": {
+            "type": "object",
+            "properties": {
+              "thumb": { "type": "string", "format": "uri" },
+              "small": { "type": "string", "format": "uri" },
+              "large": { "type": "string", "format": "uri" }
+            }
+          },
+          "market_data": {
+            "type": "object",
+            "properties": {
+              "current_price": {
+                "type": "object",
+                "properties": {
+                  "usd": { "type": "number" },
+                  "eur": { "type": "number" }
+                }
+              },
+              "market_cap": {
+                "type": "object",
+                "properties": {
+                  "usd": { "type": "number" }
+                }
+              },
+              "total_volume": {
+                "type": "object",
+                "properties": {
+                  "usd": { "type": "number" }
+                }
+              },
+              "price_change_percentage_24h": { "type": "number" }
+            }
+          },
+          "last_updated": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "symbol", "name", "description", "links", "image", "market_data", "last_updated"]
+      },
+      "MarketCoin": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "symbol": { "type": "string" },
+          "name": { "type": "string" },
+          "image": { "type": "string", "format": "uri" },
+          "current_price": { "type": "number" },
+          "market_cap": { "type": "number" },
+          "market_cap_rank": { "type": ["integer", "null"] },
+          "total_volume": { "type": "number" },
+          "high_24h": { "type": ["number", "null"] },
+          "low_24h": { "type": ["number", "null"] },
+          "price_change_24h": { "type": ["number", "null"] },
+          "price_change_percentage_24h": { "type": ["number", "null"] },
+          "last_updated": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "symbol", "name", "image", "current_price", "market_cap", "market_cap_rank", "total_volume", "high_24h", "low_24h", "price_change_24h", "price_change_percentage_24h", "last_updated"]
+      },
+      "Exchange": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "year_established": { "type": ["integer", "null"] },
+          "country": { "type": ["string", "null"] },
+          "url": { "type": "string", "format": "uri" },
+          "image": { "type": "string", "format": "uri" },
+          "trust_score": { "type": ["integer", "null"] },
+          "trust_score_rank": { "type": ["integer", "null"] },
+          "trade_volume_24h_btc": { "type": "number" }
+        },
+        "required": ["id", "name", "year_established", "country", "url", "image", "trust_score", "trust_score_rank", "trade_volume_24h_btc"]
+      }
+    }
+  }
+}

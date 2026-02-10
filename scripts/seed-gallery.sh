@@ -44,5 +44,17 @@ run_sql "INSERT OR REPLACE INTO gallery (id, domain, url, task, endpoint_count, 
 # Now sync FTS
 run_sql "INSERT INTO gallery_fts(gallery_fts) VALUES('rebuild');"
 
+echo "Uploading OpenAPI specs to R2..."
+SPECS_DIR="$(dirname "$0")/specs"
+for spec in "$SPECS_DIR"/*.json; do
+  name=$(basename "$spec" .json)
+  key="gallery/${name}.json"
+  echo "  $key"
+  npx wrangler r2 object put "unsurf-unsurf-storage-production/$key" \
+    --file "$spec" --content-type "application/json" --remote 2>/dev/null | tail -1
+done
+
+echo ""
 echo "Done! Verifying..."
-curl -s "https://unsurf.coy.workers.dev/gallery?q=api" | jq '.total, .results[].domain'
+curl -s "https://unsurf.coy.workers.dev/gallery?q=pokemon" | jq '{total: .total, first: .results[0].domain}'
+curl -s "https://unsurf.coy.workers.dev/gallery/gal_hackernews/spec" | jq '{title: .info.title}'

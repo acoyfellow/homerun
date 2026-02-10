@@ -1,0 +1,197 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Open-Meteo Weather API",
+    "version": "1.0.0",
+    "description": "Free weather forecast and historical data API"
+  },
+  "servers": [
+    { "url": "https://api.open-meteo.com" }
+  ],
+  "paths": {
+    "/v1/forecast": {
+      "get": {
+        "operationId": "getForecast",
+        "summary": "Get weather forecast",
+        "parameters": [
+          { "name": "latitude", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "longitude", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "hourly", "in": "query", "schema": { "type": "string" }, "description": "Comma-separated hourly variables e.g. temperature_2m,precipitation" },
+          { "name": "daily", "in": "query", "schema": { "type": "string" }, "description": "Comma-separated daily variables e.g. temperature_2m_max,temperature_2m_min" },
+          { "name": "timezone", "in": "query", "schema": { "type": "string", "default": "GMT" } },
+          { "name": "forecast_days", "in": "query", "schema": { "type": "integer", "default": 7 } },
+          { "name": "temperature_unit", "in": "query", "schema": { "type": "string", "enum": ["celsius", "fahrenheit"], "default": "celsius" } },
+          { "name": "wind_speed_unit", "in": "query", "schema": { "type": "string", "enum": ["kmh", "ms", "mph", "kn"], "default": "kmh" } },
+          { "name": "current", "in": "query", "schema": { "type": "string" }, "description": "Comma-separated current weather variables" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Weather forecast",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WeatherResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/archive": {
+      "get": {
+        "operationId": "getArchive",
+        "summary": "Get historical weather data",
+        "parameters": [
+          { "name": "latitude", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "longitude", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "start_date", "in": "query", "required": true, "schema": { "type": "string", "format": "date" } },
+          { "name": "end_date", "in": "query", "required": true, "schema": { "type": "string", "format": "date" } },
+          { "name": "hourly", "in": "query", "schema": { "type": "string" } },
+          { "name": "daily", "in": "query", "schema": { "type": "string" } },
+          { "name": "timezone", "in": "query", "schema": { "type": "string", "default": "GMT" } },
+          { "name": "temperature_unit", "in": "query", "schema": { "type": "string", "enum": ["celsius", "fahrenheit"], "default": "celsius" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historical weather data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WeatherResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/elevation": {
+      "get": {
+        "operationId": "getElevation",
+        "summary": "Get elevation for coordinates",
+        "parameters": [
+          { "name": "latitude", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Comma-separated latitudes" },
+          { "name": "longitude", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Comma-separated longitudes" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Elevation data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "elevation": { "type": "array", "items": { "type": "number" } }
+                  },
+                  "required": ["elevation"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/search": {
+      "servers": [
+        { "url": "https://geocoding-api.open-meteo.com" }
+      ],
+      "get": {
+        "operationId": "searchLocations",
+        "summary": "Search for locations by name (geocoding)",
+        "parameters": [
+          { "name": "name", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "count", "in": "query", "schema": { "type": "integer", "default": 10 } },
+          { "name": "language", "in": "query", "schema": { "type": "string", "default": "en" } },
+          { "name": "format", "in": "query", "schema": { "type": "string", "default": "json" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Geocoding results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/GeocodingResult" }
+                    },
+                    "generationtime_ms": { "type": "number" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "WeatherResponse": {
+        "type": "object",
+        "properties": {
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" },
+          "generationtime_ms": { "type": "number" },
+          "utc_offset_seconds": { "type": "integer" },
+          "timezone": { "type": "string" },
+          "timezone_abbreviation": { "type": "string" },
+          "elevation": { "type": "number" },
+          "hourly_units": { "type": "object", "additionalProperties": { "type": "string" } },
+          "hourly": {
+            "type": "object",
+            "properties": {
+              "time": { "type": "array", "items": { "type": "string" } },
+              "temperature_2m": { "type": "array", "items": { "type": "number" } },
+              "relative_humidity_2m": { "type": "array", "items": { "type": "integer" } },
+              "precipitation": { "type": "array", "items": { "type": "number" } },
+              "wind_speed_10m": { "type": "array", "items": { "type": "number" } }
+            },
+            "additionalProperties": { "type": "array", "items": { "type": "number" } }
+          },
+          "daily_units": { "type": "object", "additionalProperties": { "type": "string" } },
+          "daily": {
+            "type": "object",
+            "properties": {
+              "time": { "type": "array", "items": { "type": "string" } },
+              "temperature_2m_max": { "type": "array", "items": { "type": "number" } },
+              "temperature_2m_min": { "type": "array", "items": { "type": "number" } },
+              "precipitation_sum": { "type": "array", "items": { "type": "number" } }
+            },
+            "additionalProperties": { "type": "array", "items": { "type": "number" } }
+          },
+          "current_units": { "type": "object", "additionalProperties": { "type": "string" } },
+          "current": {
+            "type": "object",
+            "properties": {
+              "time": { "type": "string" },
+              "temperature_2m": { "type": "number" },
+              "relative_humidity_2m": { "type": "integer" },
+              "wind_speed_10m": { "type": "number" }
+            },
+            "additionalProperties": { "type": "number" }
+          }
+        },
+        "required": ["latitude", "longitude", "generationtime_ms", "utc_offset_seconds", "timezone", "timezone_abbreviation", "elevation"]
+      },
+      "GeocodingResult": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" },
+          "elevation": { "type": "number" },
+          "feature_code": { "type": "string" },
+          "country_code": { "type": "string" },
+          "country": { "type": "string" },
+          "admin1": { "type": "string" },
+          "admin2": { "type": "string" },
+          "timezone": { "type": "string" },
+          "population": { "type": "integer" },
+          "country_id": { "type": "integer" },
+          "admin1_id": { "type": "integer" }
+        },
+        "required": ["id", "name", "latitude", "longitude"]
+      }
+    }
+  }
+}

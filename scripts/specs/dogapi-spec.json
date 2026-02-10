@@ -1,0 +1,152 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Dog CEO API",
+    "version": "1.0.0",
+    "description": "Internet's biggest collection of open source dog pictures"
+  },
+  "servers": [
+    { "url": "https://dog.ceo" }
+  ],
+  "paths": {
+    "/api/breeds/list/all": {
+      "get": {
+        "operationId": "listAllBreeds",
+        "summary": "List all breeds",
+        "responses": {
+          "200": {
+            "description": "All breeds with sub-breeds",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "const": "success" },
+                    "message": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      }
+                    }
+                  },
+                  "required": ["status", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/breeds/image/random": {
+      "get": {
+        "operationId": "getRandomImage",
+        "summary": "Get a random dog image from all breeds",
+        "responses": {
+          "200": {
+            "description": "Single random image URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "const": "success" },
+                    "message": { "type": "string", "format": "uri" }
+                  },
+                  "required": ["status", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/breed/{breed}/images": {
+      "get": {
+        "operationId": "getBreedImages",
+        "summary": "Get all images for a breed",
+        "parameters": [
+          { "name": "breed", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of image URLs for the breed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "const": "success" },
+                    "message": {
+                      "type": "array",
+                      "items": { "type": "string", "format": "uri" }
+                    }
+                  },
+                  "required": ["status", "message"]
+                }
+              }
+            }
+          },
+          "404": { "description": "Breed not found" }
+        }
+      }
+    },
+    "/api/breed/{breed}/images/random": {
+      "get": {
+        "operationId": "getRandomBreedImage",
+        "summary": "Get a random image for a breed",
+        "parameters": [
+          { "name": "breed", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Single random image URL for the breed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "const": "success" },
+                    "message": { "type": "string", "format": "uri" }
+                  },
+                  "required": ["status", "message"]
+                }
+              }
+            }
+          },
+          "404": { "description": "Breed not found" }
+        }
+      }
+    },
+    "/api/breed/{breed}/list": {
+      "get": {
+        "operationId": "listSubBreeds",
+        "summary": "List sub-breeds for a breed",
+        "parameters": [
+          { "name": "breed", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of sub-breed names",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "const": "success" },
+                    "message": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  },
+                  "required": ["status", "message"]
+                }
+              }
+            }
+          },
+          "404": { "description": "Breed not found" }
+        }
+      }
+    }
+  }
+}

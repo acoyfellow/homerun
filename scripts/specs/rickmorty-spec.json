@@ -1,0 +1,250 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Rick and Morty API",
+    "version": "1.0.0",
+    "description": "All the Rick and Morty information you ever wanted"
+  },
+  "servers": [
+    { "url": "https://rickandmortyapi.com" }
+  ],
+  "paths": {
+    "/api/character": {
+      "get": {
+        "operationId": "listCharacters",
+        "summary": "List characters",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "name", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["alive", "dead", "unknown"] } },
+          { "name": "species", "in": "query", "schema": { "type": "string" } },
+          { "name": "gender", "in": "query", "schema": { "type": "string", "enum": ["female", "male", "genderless", "unknown"] } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of characters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "info": { "$ref": "#/components/schemas/PaginationInfo" },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Character" }
+                    }
+                  },
+                  "required": ["info", "results"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/character/{id}": {
+      "get": {
+        "operationId": "getCharacter",
+        "summary": "Get character by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Character detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Character" }
+              }
+            }
+          },
+          "404": { "description": "Character not found" }
+        }
+      }
+    },
+    "/api/location": {
+      "get": {
+        "operationId": "listLocations",
+        "summary": "List locations",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "name", "in": "query", "schema": { "type": "string" } },
+          { "name": "type", "in": "query", "schema": { "type": "string" } },
+          { "name": "dimension", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of locations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "info": { "$ref": "#/components/schemas/PaginationInfo" },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Location" }
+                    }
+                  },
+                  "required": ["info", "results"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/location/{id}": {
+      "get": {
+        "operationId": "getLocation",
+        "summary": "Get location by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Location detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Location" }
+              }
+            }
+          },
+          "404": { "description": "Location not found" }
+        }
+      }
+    },
+    "/api/episode": {
+      "get": {
+        "operationId": "listEpisodes",
+        "summary": "List episodes",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "name", "in": "query", "schema": { "type": "string" } },
+          { "name": "episode", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of episodes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "info": { "$ref": "#/components/schemas/PaginationInfo" },
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Episode" }
+                    }
+                  },
+                  "required": ["info", "results"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/episode/{id}": {
+      "get": {
+        "operationId": "getEpisode",
+        "summary": "Get episode by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Episode detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Episode" }
+              }
+            }
+          },
+          "404": { "description": "Episode not found" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PaginationInfo": {
+        "type": "object",
+        "properties": {
+          "count": { "type": "integer" },
+          "pages": { "type": "integer" },
+          "next": { "type": ["string", "null"], "format": "uri" },
+          "prev": { "type": ["string", "null"], "format": "uri" }
+        },
+        "required": ["count", "pages", "next", "prev"]
+      },
+      "Character": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "status": { "type": "string", "enum": ["Alive", "Dead", "unknown"] },
+          "species": { "type": "string" },
+          "type": { "type": "string" },
+          "gender": { "type": "string", "enum": ["Female", "Male", "Genderless", "unknown"] },
+          "origin": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "url": { "type": "string", "format": "uri" }
+            },
+            "required": ["name", "url"]
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "url": { "type": "string", "format": "uri" }
+            },
+            "required": ["name", "url"]
+          },
+          "image": { "type": "string", "format": "uri" },
+          "episode": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "url": { "type": "string", "format": "uri" },
+          "created": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "name", "status", "species", "type", "gender", "origin", "location", "image", "episode", "url", "created"]
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "dimension": { "type": "string" },
+          "residents": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "url": { "type": "string", "format": "uri" },
+          "created": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "name", "type", "dimension", "residents", "url", "created"]
+      },
+      "Episode": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "air_date": { "type": "string" },
+          "episode": { "type": "string" },
+          "characters": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "url": { "type": "string", "format": "uri" },
+          "created": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "name", "air_date", "episode", "characters", "url", "created"]
+      }
+    }
+  }
+}
