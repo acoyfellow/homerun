@@ -19,6 +19,14 @@
 		"lineWidth": 100
 	},
 	"files": {
-		"ignore": ["node_modules", "dist", "migrations", ".alchemy", ".wrangler", "docs", "scripts/specs"]
+		"ignore": [
+			"node_modules",
+			"dist",
+			"migrations",
+			".alchemy",
+			".wrangler",
+			"docs",
+			"scripts/specs"
+		]
 	}
 }
