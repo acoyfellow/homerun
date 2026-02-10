@@ -11,6 +11,7 @@ import { Browser } from "../services/Browser.js";
 import { Gallery } from "../services/Gallery.js";
 import { OpenApiGenerator } from "../services/OpenApiGenerator.js";
 import { SchemaInferrer } from "../services/SchemaInferrer.js";
+import { Directory } from "../services/Directory.js";
 import { Store } from "../services/Store.js";
 
 // ==================== Types ====================
@@ -320,6 +321,16 @@ export const scout = (
 				Effect.flatMap((galleryOpt) => {
 					if (Option.isNone(galleryOpt)) return Effect.void;
 					return galleryOpt.value.publish(siteId).pipe(Effect.catchAll(() => Effect.void));
+				}),
+			);
+		}
+
+		// 7. Publish to directory if explicitly requested
+		if (input.publish === true) {
+			yield* Effect.serviceOption(Directory).pipe(
+				Effect.flatMap((dirOpt) => {
+					if (Option.isNone(dirOpt)) return Effect.void;
+					return dirOpt.value.publish(siteId).pipe(Effect.catchAll(() => Effect.void));
 				}),
 			);
 		}

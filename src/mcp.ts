@@ -16,6 +16,7 @@ import { Gallery, makeD1Gallery, makeKvCache } from "./services/Gallery.js";
 import { OpenApiGenerator, makeOpenApiGenerator } from "./services/OpenApiGenerator.js";
 import { SchemaInferrer, makeSchemaInferrer } from "./services/SchemaInferrer.js";
 import { StoreD1Live, makeD1Store } from "./services/Store.js";
+import { Directory, makeD1Directory } from "./services/Directory.js";
 import { heal } from "./tools/Heal.js";
 import { scout } from "./tools/Scout.js";
 import { worker } from "./tools/Worker.js";
@@ -26,6 +27,8 @@ interface Env {
 	BROWSER: BrowserWorker;
 	CACHE?: KVNamespace | undefined;
 	ANTHROPIC_API_KEY?: string | undefined;
+	VECTORS?: unknown | undefined;
+	AI?: unknown | undefined;
 }
 
 function buildGalleryService(env: Env) {
@@ -55,6 +58,19 @@ function buildWorkerLayer(env: Env) {
 	);
 }
 
+function okText(data: unknown) {
+	return {
+		content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
+	};
+}
+
+function errText(message: string) {
+	return {
+		content: [{ type: "text" as const, text: JSON.stringify({ error: message }) }],
+		isError: true as const,
+	};
+}
+
 export function createMcpServer(env: Env): McpServer {
 	const server = new McpServer(
 		{ name: "unsurf", version: "0.1.0" },
@@ -70,11 +86,15 @@ export function createMcpServer(env: Env): McpServer {
 			inputSchema: {
 				url: z.string().url().describe("The URL to scout"),
 				task: z.string().describe("What to look for, e.g. 'find all API endpoints'"),
+				publish: z
+					.boolean()
+					.optional()
+					.describe("Auto-publish the scouted site to the directory after scouting"),
 			},
 		},
-		async ({ url, task }) => {
+		async ({ url, task, publish }) => {
 			const result = await Effect.runPromise(
-				scout({ url, task }).pipe(Effect.provide(buildLayer(env))),
+				scout({ url, task, publish }).pipe(Effect.provide(buildLayer(env))),
 			);
 			return {
 				content: [
@@ -165,6 +185,98 @@ export function createMcpServer(env: Env): McpServer {
 			};
 		},
 	);
+
+	if (env.VECTORS && env.AI) {
+		const directoryService = makeD1Directory(env.DB, env.STORAGE, env.VECTORS, env.AI);
+
+		server.registerTool(
+			"directory",
+			{
+				title: "Directory",
+				description:
+					"Fingerprint-first API directory. Look up domains, browse capabilities, inspect endpoints, semantic search, or publish scouted sites. Check here before scouting — returns token-efficient fingerprints, not full specs.",
+				inputSchema: {
+					action: z
+						.enum(["fingerprint", "capability", "endpoint", "search", "publish"])
+						.describe(
+							"fingerprint: get domain overview (~50 tokens). capability: list endpoints by capability (~200 tokens). endpoint: single endpoint detail (~80 tokens). search: semantic search across all APIs. publish: add a scouted site to the directory.",
+						),
+					domain: z
+						.string()
+						.optional()
+						.describe("Domain to look up (required for fingerprint, capability, endpoint)"),
+					capability: z
+						.enum([
+							"auth",
+							"payments",
+							"content",
+							"crud",
+							"search",
+							"messaging",
+							"files",
+							"analytics",
+							"social",
+							"ecommerce",
+							"forms",
+							"other",
+						])
+						.optional()
+						.describe("Capability category (required for capability action)"),
+					method: z
+						.string()
+						.optional()
+						.describe("HTTP method (required for endpoint action)"),
+					path: z
+						.string()
+						.optional()
+						.describe("Endpoint path (required for endpoint action)"),
+					query: z
+						.string()
+						.optional()
+						.describe("Search query (required for search action)"),
+					siteId: z
+						.string()
+						.optional()
+						.describe("Site ID from a scout result (required for publish action)"),
+				},
+			},
+			async ({ action, domain, capability, method, path, query, siteId }) => {
+				const run = <A>(effect: Effect.Effect<A, any, never>): Promise<A> =>
+					Effect.runPromise(effect);
+
+				switch (action) {
+					case "fingerprint": {
+						if (!domain) return errText("domain is required for fingerprint action");
+						const fp = await run(directoryService.getFingerprint(domain));
+						return okText(fp);
+					}
+					case "capability": {
+						if (!domain) return errText("domain is required for capability action");
+						if (!capability) return errText("capability is required for capability action");
+						const slice = await run(directoryService.getCapabilitySlice(domain, capability));
+						return okText(slice);
+					}
+					case "endpoint": {
+						if (!domain) return errText("domain is required for endpoint action");
+						if (!method) return errText("method is required for endpoint action");
+						if (!path) return errText("path is required for endpoint action");
+						const ep = await run(directoryService.getEndpoint(domain, method, path));
+						return okText(ep);
+					}
+					case "search": {
+						if (!query) return errText("query is required for search action");
+						const results = await run(directoryService.search(query));
+						return okText({ results, total: results.length });
+					}
+					case "publish": {
+						if (!siteId) return errText("siteId is required for publish action");
+						const fp = await run(directoryService.publish(siteId));
+						return okText(fp);
+					}
+				}
+			},
+		);
+	}
 
 	if (env.ANTHROPIC_API_KEY) {
 		server.registerTool(
