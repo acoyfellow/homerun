@@ -77,6 +77,56 @@ export const gallery = sqliteTable(
 	(table) => [index("idx_gallery_domain").on(table.domain)],
 );
 
+// Directory tables for fingerprint-first architecture
+export const fingerprints = sqliteTable(
+	"fingerprints",
+	{
+		id: text("id").primaryKey(),
+		domain: text("domain").notNull().unique(),
+		url: text("url").notNull(),
+		endpointCount: integer("endpoint_count").notNull(),
+		capabilities: text("capabilities").notNull(), // JSON array
+		methods: text("methods").notNull(), // JSON object {"GET": 5, "POST": 3}
+		auth: text("auth").notNull(), // none|bearer|cookie|api-key|oauth|basic|unknown
+		confidence: integer("confidence").notNull(), // 0-100 stored as int
+		specKey: text("spec_key").notNull(), // R2 key for full OpenAPI
+		contributor: text("contributor").default("anonymous"),
+		createdAt: text("created_at").notNull(),
+		updatedAt: text("updated_at").notNull(),
+		version: integer("version").notNull().default(1),
+	},
+	(table) => [index("idx_fingerprints_domain").on(table.domain)],
+);
+
+export const directoryEndpoints = sqliteTable(
+	"directory_endpoints",
+	{
+		id: text("id").primaryKey(),
+		fingerprintId: text("fingerprint_id")
+			.notNull()
+			.references(() => fingerprints.id),
+		method: text("method").notNull(),
+		path: text("path").notNull(),
+		summary: text("summary").notNull(),
+		capability: text("capability").notNull(), // auth|payments|content|crud|...
+		requestSchema: text("request_schema"), // JSON Schema as string
+		responseSchema: text("response_schema"), // JSON Schema as string
+		auth: integer("auth").notNull(), // 0 or 1
+		exampleRequest: text("example_request"), // JSON
+		exampleResponse: text("example_response"), // JSON
+		vectorId: text("vector_id"), // ID in Vectorize for semantic search
+	},
+	(table) => [
+		index("idx_directory_endpoints_fingerprint").on(table.fingerprintId),
+		index("idx_directory_endpoints_capability").on(table.capability),
+		uniqueIndex("idx_directory_endpoints_unique").on(
+			table.fingerprintId,
+			table.method,
+			table.path,
+		),
+	],
+);
+
 // FTS5 virtual table for full-text search on gallery
 export const galleryFts = sql`
 CREATE VIRTUAL TABLE IF NOT EXISTS gallery_fts USING fts5(
@@ -123,3 +173,7 @@ export type Run = typeof runs.$inferSelect;
 export type NewRun = typeof runs.$inferInsert;
 export type Gallery = typeof gallery.$inferSelect;
 export type NewGallery = typeof gallery.$inferInsert;
+export type FingerprintRow = typeof fingerprints.$inferSelect;
+export type NewFingerprintRow = typeof fingerprints.$inferInsert;
+export type DirectoryEndpointRow = typeof directoryEndpoints.$inferSelect;
+export type NewDirectoryEndpointRow = typeof directoryEndpoints.$inferInsert;

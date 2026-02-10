@@ -6,6 +6,7 @@ import {
 	D1Database,
 	KVNamespace,
 	R2Bucket,
+	VectorizeIndex,
 	Worker,
 } from "alchemy/cloudflare";
 import { CloudflareStateStore } from "alchemy/state";
@@ -35,7 +36,21 @@ const CACHE = await KVNamespace("unsurf-gallery-cache", {
 	adopt: true,
 });
 
-const bindings: Record<string, Binding> = { DB, STORAGE, BROWSER, CACHE };
+// Vectorize index for semantic search + capability classification
+const VECTORS = await VectorizeIndex("unsurf-vectors", {
+	dimensions: 768,
+	metric: "cosine",
+	adopt: true,
+});
+
+const bindings: Record<string, Binding> = {
+	DB,
+	STORAGE,
+	BROWSER,
+	CACHE,
+	VECTORS,
+	AI: { binding: "AI" } as unknown as Binding, // Workers AI binding
+};
 
 // Optional: pass Anthropic API key for LLM-guided scout
 if (process.env.ANTHROPIC_API_KEY) {

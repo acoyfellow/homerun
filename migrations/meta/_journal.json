@@ -15,6 +15,13 @@
       "when": 1770664093914,
       "tag": "0001_milky_polaris",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770753674705,
+      "tag": "0002_complete_inhumans",
+      "breakpoints": true
     }
   ]
 }

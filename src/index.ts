@@ -41,6 +41,15 @@ export {
 } from "./services/Gallery.js";
 export type { GalleryService, KvCacheService } from "./services/Gallery.js";
 export {
+	Directory,
+	DirectoryD1Live,
+	makeD1Directory,
+	classifyEndpoint,
+	detectAuth,
+	generateSummary,
+} from "./services/Directory.js";
+export type { DirectoryService } from "./services/Directory.js";
+export {
 	SchemaInferrer,
 	SchemaInferrerLive,
 	makeSchemaInferrer,
@@ -64,6 +73,14 @@ export {
 } from "./domain/NetworkEvent.js";
 export { Site } from "./domain/Site.js";
 export { GalleryEntry } from "./domain/Gallery.js";
+export {
+	Fingerprint,
+	EndpointSummary,
+	CapabilitySlice,
+	SearchResult,
+	AuthType,
+	Capability,
+} from "./domain/Fingerprint.js";
 export {
 	NetworkError,
 	BrowserError,

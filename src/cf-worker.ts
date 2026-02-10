@@ -9,6 +9,7 @@ import { createDb } from "./db/queries.js";
 import { handleMcpRequest } from "./mcp.js";
 import { BrowserCfLive } from "./services/Browser.js";
 import { Gallery, KvCache, KvCacheLive, makeD1Gallery, makeKvCache } from "./services/Gallery.js";
+import { Directory, makeD1Directory } from "./services/Directory.js";
 import { OpenApiGenerator, makeOpenApiGenerator } from "./services/OpenApiGenerator.js";
 import { SchemaInferrer, makeSchemaInferrer } from "./services/SchemaInferrer.js";
 import { Store, StoreD1Live, makeD1Store } from "./services/Store.js";
@@ -21,6 +22,8 @@ interface Env {
 	STORAGE: R2Bucket;
 	BROWSER: BrowserWorker;
 	CACHE?: KVNamespace | undefined;
+	VECTORS?: VectorizeIndex | undefined;
+	AI?: Ai | undefined;
 	ANTHROPIC_API_KEY?: string | undefined;
 }
 
@@ -69,6 +72,15 @@ function buildGalleryService(env: Env) {
 	const storeService = makeD1Store(createDb(env.DB), env.STORAGE);
 	const kvCache = env.CACHE ? makeKvCache(env.CACHE) : undefined;
 	return makeD1Gallery(env.DB, storeService, kvCache);
+}
+
+// ==================== Directory Helpers ====================
+
+function buildDirectoryService(env: Env) {
+	if (!env.VECTORS || !env.AI) {
+		throw new Error("Directory requires VECTORS and AI bindings");
+	}
+	return makeD1Directory(env.DB, env.STORAGE, env.VECTORS, env.AI);
 }
 
 async function handleGallerySearch(url: URL, env: Env): Promise<Response> {
@@ -164,9 +176,17 @@ export default {
 		if (url.pathname === "/") {
 			return jsonResponse({
 				name: "unsurf",
-				version: "0.2.0",
-				description: "Turn any website into a typed API",
-				tools: ["scout", "worker", "heal", "gallery"],
+				version: "0.3.0",
+				description: "The typed internet — a machine-readable directory of every API",
+				directory: {
+					fingerprint: "/d/:domain",
+					capability: "/d/:domain/:capability",
+					endpoint: "/d/:domain/:method/:path",
+					spec: "/d/:domain/spec",
+					search: "/search?q=:query",
+					publish: "POST /d/publish",
+				},
+				tools: ["scout", "worker", "heal"],
 				mcp: "/mcp",
 				docs: "https://unsurf.coey.dev",
 			});
@@ -177,7 +197,97 @@ export default {
 			return handleMcpRequest(request, env);
 		}
 
-		// Gallery routes
+		// Directory routes (/d/:domain, /d/:domain/:capability, /d/:domain/:method/:path, /d/:domain/spec)
+		if (url.pathname.startsWith("/d/")) {
+			try {
+				if (!env.VECTORS || !env.AI) {
+					return errorResponse("Directory not configured (requires VECTORS + AI bindings)", 503);
+				}
+				const directory = buildDirectoryService(env);
+				const parts = url.pathname.slice(3).split("/").filter(Boolean);
+
+				if (parts.length === 0) {
+					// GET /d/ - list all
+					const offset = Number(url.searchParams.get("offset") || 0);
+					const limit = Number(url.searchParams.get("limit") || 20);
+					const results = await Effect.runPromise(directory.list(offset, limit));
+					return jsonResponse({ fingerprints: results, count: results.length });
+				}
+
+				const domain = parts[0]!;
+
+				if (parts.length === 1) {
+					// GET /d/:domain - fingerprint
+					const fp = await Effect.runPromise(directory.getFingerprint(domain));
+					return jsonResponse(fp);
+				}
+
+				if (parts[1] === "spec") {
+					// GET /d/:domain/spec - full OpenAPI
+					const spec = await Effect.runPromise(directory.getSpec(domain));
+					return jsonResponse(spec);
+				}
+
+				if (parts.length === 2) {
+					// GET /d/:domain/:capability - capability slice
+					const slice = await Effect.runPromise(
+						directory.getCapabilitySlice(domain, parts[1]! as any),
+					);
+					return jsonResponse(slice);
+				}
+
+				if (parts.length >= 3) {
+					// GET /d/:domain/:method/:path - single endpoint
+					const method = parts[1]!;
+					const path = "/" + parts.slice(2).join("/");
+					const endpoint = await Effect.runPromise(directory.getEndpoint(domain, method, path));
+					return jsonResponse(endpoint);
+				}
+
+				return errorResponse("Invalid directory path", 400);
+			} catch (e) {
+				const message = e instanceof Error ? e.message : String(e);
+				if (message.includes("NotFoundError")) return errorResponse(message, 404);
+				return errorResponse(message);
+			}
+		}
+
+		// Search endpoint
+		if (url.pathname === "/search" && request.method === "GET") {
+			try {
+				if (!env.VECTORS || !env.AI) {
+					return errorResponse("Search not configured (requires VECTORS + AI bindings)", 503);
+				}
+				const q = url.searchParams.get("q");
+				if (!q) return errorResponse("Missing 'q' query parameter", 400);
+				const limit = Number(url.searchParams.get("limit") || 10);
+				const directory = buildDirectoryService(env);
+				const results = await Effect.runPromise(directory.search(q, limit));
+				return jsonResponse({ results, total: results.length });
+			} catch (e) {
+				const message = e instanceof Error ? e.message : String(e);
+				return errorResponse(message);
+			}
+		}
+
+		// Publish to directory
+		if (url.pathname === "/d/publish" && request.method === "POST") {
+			try {
+				if (!env.VECTORS || !env.AI) {
+					return errorResponse("Directory not configured (requires VECTORS + AI bindings)", 503);
+				}
+				const body = (await request.json()) as { siteId: string; contributor?: string };
+				if (!body.siteId) return errorResponse("Missing 'siteId' in body", 400);
+				const directory = buildDirectoryService(env);
+				const fp = await Effect.runPromise(directory.publish(body.siteId, body.contributor));
+				return jsonResponse(fp);
+			} catch (e) {
+				const message = e instanceof Error ? e.message : String(e);
+				return errorResponse(message);
+			}
+		}
+
+		// Gallery routes (legacy)
 		if (url.pathname.startsWith("/gallery")) {
 			try {
 				if (request.method === "GET" && url.pathname === "/gallery") {
