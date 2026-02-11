@@ -119,11 +119,7 @@ export const directoryEndpoints = sqliteTable(
 	(table) => [
 		index("idx_directory_endpoints_fingerprint").on(table.fingerprintId),
 		index("idx_directory_endpoints_capability").on(table.capability),
-		uniqueIndex("idx_directory_endpoints_unique").on(
-			table.fingerprintId,
-			table.method,
-			table.path,
-		),
+		uniqueIndex("idx_directory_endpoints_unique").on(table.fingerprintId, table.method, table.path),
 	],
 );
 

@@ -8,10 +8,10 @@ import { PathStep, ScoutedPath } from "../domain/Path.js";
 import { Site } from "../domain/Site.js";
 import { extractDomain, normalizeUrlPattern } from "../lib/url.js";
 import { Browser } from "../services/Browser.js";
+import { Directory } from "../services/Directory.js";
 import { Gallery } from "../services/Gallery.js";
 import { OpenApiGenerator } from "../services/OpenApiGenerator.js";
 import { SchemaInferrer } from "../services/SchemaInferrer.js";
-import { Directory } from "../services/Directory.js";
 import { Store } from "../services/Store.js";
 
 // ==================== Types ====================

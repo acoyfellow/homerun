@@ -60,7 +60,15 @@ function nowISO(): string {
 
 // Capability classification rules
 const CAPABILITY_PATTERNS: Record<Capability, RegExp[]> = {
-	auth: [/\/auth/i, /\/login/i, /\/logout/i, /\/register/i, /\/users?\//i, /\/session/i, /\/oauth/i],
+	auth: [
+		/\/auth/i,
+		/\/login/i,
+		/\/logout/i,
+		/\/register/i,
+		/\/users?\//i,
+		/\/session/i,
+		/\/oauth/i,
+	],
 	payments: [/\/pay/i, /\/charge/i, /\/invoice/i, /\/subscription/i, /\/billing/i, /\/stripe/i],
 	content: [/\/posts?\//i, /\/articles?\//i, /\/comments?\//i, /\/feed/i, /\/blog/i],
 	crud: [/\/api\/v?\d*\//i],
@@ -115,13 +123,14 @@ function generateSummary(method: string, path: string): string {
 }
 
 export { classifyEndpoint, detectAuth, generateSummary, generateId, nowISO };
+export type { Capability };
 
 // ==================== Types for CF bindings ====================
 
 // Use 'any' to bypass CF worker type mismatches between local and deployed types
 // biome-ignore lint/suspicious/noExplicitAny: CF binding types vary between environments
 type VectorizeBinding = any;
-// biome-ignore lint/suspicious/noExplicitAny: CF binding types vary between environments  
+// biome-ignore lint/suspicious/noExplicitAny: CF binding types vary between environments
 type AiBinding = any;
 
 // ==================== D1 + Vectorize Implementation ====================
@@ -155,7 +164,8 @@ export function makeD1Directory(
 				const fp = yield* tryD1(() =>
 					db.prepare("SELECT id FROM fingerprints WHERE domain = ?").bind(domain).first(),
 				);
-				if (!fp) return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
+				if (!fp)
+					return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
 
 				const rows = yield* tryD1(() =>
 					db
@@ -178,7 +188,8 @@ export function makeD1Directory(
 				const fp = yield* tryD1(() =>
 					db.prepare("SELECT id FROM fingerprints WHERE domain = ?").bind(domain).first(),
 				);
-				if (!fp) return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
+				if (!fp)
+					return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
 
 				const row = yield* tryD1(() =>
 					db
@@ -202,7 +213,8 @@ export function makeD1Directory(
 				const fp = yield* tryD1(() =>
 					db.prepare("SELECT spec_key FROM fingerprints WHERE domain = ?").bind(domain).first(),
 				);
-				if (!fp) return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
+				if (!fp)
+					return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
 
 				const obj = yield* tryD1(() => storage.get((fp as { spec_key: string }).spec_key));
 				if (!obj) return yield* Effect.fail(new NotFoundError({ id: domain, resource: "spec" }));
@@ -236,6 +248,7 @@ export function makeD1Directory(
 			}),
 
 		publish: (siteId, contributor = "anonymous") =>
+			// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: multi-step DB operation
 			Effect.gen(function* () {
 				// Get site and endpoints from existing store
 				const site = yield* tryD1(() =>
@@ -284,7 +297,7 @@ export function makeD1Directory(
 					yield* tryD1(() =>
 						db
 							.prepare(
-								`UPDATE fingerprints SET url=?, endpoint_count=?, capabilities=?, methods=?, auth=?, confidence=?, updated_at=?, version=? WHERE id=?`,
+								"UPDATE fingerprints SET url=?, endpoint_count=?, capabilities=?, methods=?, auth=?, confidence=?, updated_at=?, version=? WHERE id=?",
 							)
 							.bind(
 								url,
@@ -312,7 +325,7 @@ export function makeD1Directory(
 					yield* tryD1(() =>
 						db
 							.prepare(
-								`INSERT INTO fingerprints (id, domain, url, endpoint_count, capabilities, methods, auth, confidence, spec_key, contributor, created_at, updated_at, version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+								"INSERT INTO fingerprints (id, domain, url, endpoint_count, capabilities, methods, auth, confidence, spec_key, contributor, created_at, updated_at, version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
 							)
 							.bind(
 								fingerprintId,
@@ -346,7 +359,7 @@ export function makeD1Directory(
 					yield* tryD1(() =>
 						db
 							.prepare(
-								`INSERT INTO directory_endpoints (id, fingerprint_id, method, path, summary, capability, request_schema, response_schema, auth, vector_id) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+								"INSERT INTO directory_endpoints (id, fingerprint_id, method, path, summary, capability, request_schema, response_schema, auth, vector_id) VALUES (?,?,?,?,?,?,?,?,?,?)",
 							)
 							.bind(
 								epId,
@@ -529,9 +542,7 @@ export function makeTestDirectory(store: StoreService): DirectoryService {
 			Effect.gen(function* () {
 				const fpId = fpIdByDomain.get(domain);
 				if (!fpId)
-					return yield* Effect.fail(
-						new NotFoundError({ id: domain, resource: "fingerprint" }),
-					);
+					return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
 
 				const eps = (directoryEndpoints.get(fpId) ?? []).filter(
 					(ep) => classifyEndpoint(ep.method, ep.path) === capability,
@@ -548,14 +559,10 @@ export function makeTestDirectory(store: StoreService): DirectoryService {
 			Effect.gen(function* () {
 				const fpId = fpIdByDomain.get(domain);
 				if (!fpId)
-					return yield* Effect.fail(
-						new NotFoundError({ id: domain, resource: "fingerprint" }),
-					);
+					return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
 
 				const eps = directoryEndpoints.get(fpId) ?? [];
-				const found = eps.find(
-					(ep) => ep.method === method.toUpperCase() && ep.path === path,
-				);
+				const found = eps.find((ep) => ep.method === method.toUpperCase() && ep.path === path);
 				if (!found)
 					return yield* Effect.fail(
 						new NotFoundError({ id: `${method} ${path}`, resource: "endpoint" }),
@@ -568,20 +575,13 @@ export function makeTestDirectory(store: StoreService): DirectoryService {
 			Effect.gen(function* () {
 				const fpId = fpIdByDomain.get(domain);
 				if (!fpId)
-					return yield* Effect.fail(
-						new NotFoundError({ id: domain, resource: "fingerprint" }),
-					);
+					return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
 				const fp = fingerprints.get(fpId);
 				if (!fp)
-					return yield* Effect.fail(
-						new NotFoundError({ id: domain, resource: "fingerprint" }),
-					);
+					return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
 
 				const blob = yield* store.getBlob(fp.specKey);
-				if (!blob)
-					return yield* Effect.fail(
-						new NotFoundError({ id: domain, resource: "spec" }),
-					);
+				if (!blob) return yield* Effect.fail(new NotFoundError({ id: domain, resource: "spec" }));
 
 				const text = new TextDecoder().decode(blob);
 				return JSON.parse(text) as Record<string, unknown>;
@@ -594,8 +594,7 @@ export function makeTestDirectory(store: StoreService): DirectoryService {
 			for (const [fpId, fp] of fingerprints) {
 				const eps = directoryEndpoints.get(fpId) ?? [];
 				for (const ep of eps) {
-					const text =
-						`${fp.domain} ${ep.method} ${ep.path} ${ep.summary}`.toLowerCase();
+					const text = `${fp.domain} ${ep.method} ${ep.path} ${ep.summary}`.toLowerCase();
 					if (text.includes(q)) {
 						results.push({
 							domain: fp.domain,
@@ -622,7 +621,7 @@ export function makeTestDirectory(store: StoreService): DirectoryService {
 
 				const capabilitySet = new Set<string>();
 				const methodCounts: Record<string, number> = {};
-				let detectedAuthType = "none";
+				const detectedAuthType = "none";
 
 				const epSummaries: EndpointSummary[] = [];
 
@@ -636,9 +635,7 @@ export function makeTestDirectory(store: StoreService): DirectoryService {
 						method: ep.method,
 						path: ep.pathPattern,
 						summary,
-						requestSchema: ep.requestSchema
-							? Option.some(ep.requestSchema)
-							: Option.none(),
+						requestSchema: ep.requestSchema ? Option.some(ep.requestSchema) : Option.none(),
 						responseSchema: ep.responseSchema ?? {},
 						auth: false,
 						example: Option.none(),
@@ -685,10 +682,7 @@ export function makeTestDirectory(store: StoreService): DirectoryService {
 
 		list: (offset = 0, limit = 20) => {
 			const all = [...fingerprints.values()]
-				.sort(
-					(a, b) =>
-						new Date(b.lastScouted).getTime() - new Date(a.lastScouted).getTime(),
-				)
+				.sort((a, b) => new Date(b.lastScouted).getTime() - new Date(a.lastScouted).getTime())
 				.slice(offset, offset + limit);
 			return Effect.succeed(all as Fingerprint[]);
 		},

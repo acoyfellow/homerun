@@ -12,11 +12,11 @@ import { makeAnthropicProvider } from "./ai/AnthropicProvider.js";
 import { runScoutAgent } from "./ai/ScoutAgent.js";
 import { createDb } from "./db/queries.js";
 import { BrowserCfLive, makeCfBrowser } from "./services/Browser.js";
+import { Directory, makeD1Directory } from "./services/Directory.js";
 import { Gallery, makeD1Gallery, makeKvCache } from "./services/Gallery.js";
 import { OpenApiGenerator, makeOpenApiGenerator } from "./services/OpenApiGenerator.js";
 import { SchemaInferrer, makeSchemaInferrer } from "./services/SchemaInferrer.js";
 import { StoreD1Live, makeD1Store } from "./services/Store.js";
-import { Directory, makeD1Directory } from "./services/Directory.js";
 import { heal } from "./tools/Heal.js";
 import { scout } from "./tools/Scout.js";
 import { worker } from "./tools/Worker.js";
@@ -222,25 +222,18 @@ export function createMcpServer(env: Env): McpServer {
 						])
 						.optional()
 						.describe("Capability category (required for capability action)"),
-					method: z
-						.string()
-						.optional()
-						.describe("HTTP method (required for endpoint action)"),
-					path: z
-						.string()
-						.optional()
-						.describe("Endpoint path (required for endpoint action)"),
-					query: z
-						.string()
-						.optional()
-						.describe("Search query (required for search action)"),
+					method: z.string().optional().describe("HTTP method (required for endpoint action)"),
+					path: z.string().optional().describe("Endpoint path (required for endpoint action)"),
+					query: z.string().optional().describe("Search query (required for search action)"),
 					siteId: z
 						.string()
 						.optional()
 						.describe("Site ID from a scout result (required for publish action)"),
 				},
 			},
+			// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: routing dispatch
 			async ({ action, domain, capability, method, path, query, siteId }) => {
+				// biome-ignore lint/suspicious/noExplicitAny: Effect error channel
 				const run = <A>(effect: Effect.Effect<A, any, never>): Promise<A> =>
 					Effect.runPromise(effect);
 

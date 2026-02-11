@@ -8,8 +8,8 @@ import { Effect, Layer } from "effect";
 import { createDb } from "./db/queries.js";
 import { handleMcpRequest } from "./mcp.js";
 import { BrowserCfLive } from "./services/Browser.js";
+import { type Capability, Directory, makeD1Directory } from "./services/Directory.js";
 import { Gallery, KvCache, KvCacheLive, makeD1Gallery, makeKvCache } from "./services/Gallery.js";
-import { Directory, makeD1Directory } from "./services/Directory.js";
 import { OpenApiGenerator, makeOpenApiGenerator } from "./services/OpenApiGenerator.js";
 import { SchemaInferrer, makeSchemaInferrer } from "./services/SchemaInferrer.js";
 import { Store, StoreD1Live, makeD1Store } from "./services/Store.js";
@@ -214,7 +214,7 @@ export default {
 					return jsonResponse({ fingerprints: results, count: results.length });
 				}
 
-				const domain = parts[0]!;
+				const domain = parts[0] ?? "";
 
 				if (parts.length === 1) {
 					// GET /d/:domain - fingerprint
@@ -230,16 +230,15 @@ export default {
 
 				if (parts.length === 2) {
 					// GET /d/:domain/:capability - capability slice
-					const slice = await Effect.runPromise(
-						directory.getCapabilitySlice(domain, parts[1]! as any),
-					);
+					const cap = (parts[1] ?? "") as Capability;
+					const slice = await Effect.runPromise(directory.getCapabilitySlice(domain, cap));
 					return jsonResponse(slice);
 				}
 
 				if (parts.length >= 3) {
 					// GET /d/:domain/:method/:path - single endpoint
-					const method = parts[1]!;
-					const path = "/" + parts.slice(2).join("/");
+					const method = parts[1] ?? "";
+					const path = `/${parts.slice(2).join("/")}`;
 					const endpoint = await Effect.runPromise(directory.getEndpoint(domain, method, path));
 					return jsonResponse(endpoint);
 				}

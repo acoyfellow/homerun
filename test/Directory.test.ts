@@ -47,9 +47,7 @@ async function seedSite(
 
 describe("Directory", () => {
 	it("getFingerprint returns NotFoundError for missing domain", async () => {
-		const exit = await Effect.runPromiseExit(
-			directory.getFingerprint("nonexistent.example.com"),
-		);
+		const exit = await Effect.runPromiseExit(directory.getFingerprint("nonexistent.example.com"));
 		expect(Exit.isFailure(exit)).toBe(true);
 	});
 

@@ -59,7 +59,17 @@ Examples:
 
 async function searchCommand(query: string): Promise<void> {
 	const data = await api(`/search?q=${encodeURIComponent(query)}`);
-	const results = (data as { results: Array<{ domain: string; match: string; capability: string; confidence: number; specUrl: string }> }).results;
+	const results = (
+		data as {
+			results: Array<{
+				domain: string;
+				match: string;
+				capability: string;
+				confidence: number;
+				specUrl: string;
+			}>;
+		}
+	).results;
 
 	if (!results || results.length === 0) {
 		console.log("No results found.");
@@ -94,7 +104,11 @@ async function lookupCommand(domain: string): Promise<void> {
 	console.log(`  URL:          ${fp.url}`);
 	console.log(`  Endpoints:    ${fp.endpoints}`);
 	console.log(`  Capabilities: ${fp.capabilities.join(", ")}`);
-	console.log(`  Methods:      ${Object.entries(fp.methods).map(([m, c]) => `${m}:${c}`).join(", ")}`);
+	console.log(
+		`  Methods:      ${Object.entries(fp.methods)
+			.map(([m, c]) => `${m}:${c}`)
+			.join(", ")}`,
+	);
 	console.log(`  Auth:         ${fp.auth}`);
 	console.log(`  Confidence:   ${(fp.confidence * 100).toFixed(1)}%`);
 	console.log(`  Version:      ${fp.version}`);
