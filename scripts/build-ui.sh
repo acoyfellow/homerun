@@ -9,8 +9,8 @@ echo '// Run: bash scripts/build-ui.sh' >> "$OUTPUT"
 echo '' >> "$OUTPUT"
 echo 'export const directoryHtml = `' >> "$OUTPUT"
 
-# Escape backticks and ${} template strings
-sed 's/`/\\`/g; s/\${/\\${/g' "$INPUT" >> "$OUTPUT"
+# Escape backticks and dollar signs (but not backslashes in JS)
+sed 's/`/\\`/g; s/\${\([^}]*\)}/\\${\1}/g' "$INPUT" >> "$OUTPUT"
 
 echo '`;' >> "$OUTPUT"
 
