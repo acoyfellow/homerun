@@ -70,7 +70,11 @@ function seedStore() {
 
 function runWorker(
 	store: ReturnType<typeof makeTestStore>,
-	input: { pathId: string; data?: Record<string, unknown> | undefined },
+	input: {
+		pathId: string;
+		data?: Record<string, unknown> | undefined;
+		headers?: Record<string, string> | undefined;
+	},
 ) {
 	const layer = Layer.succeed(Store, store);
 	return Effect.provide(worker(input), layer);
@@ -216,6 +220,72 @@ describe("Worker", () => {
 
 		await Effect.runPromise(runWorker(store, { pathId: "path-1" }));
 		// No throw = run was saved successfully
+
+		vi.unstubAllGlobals();
+	});
+
+	it("passes custom headers to fetch", async () => {
+		const store = seedStore();
+
+		const fetchSpy = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ authenticated: true }), {
+				status: 200,
+				headers: { "content-type": "application/json" },
+			}),
+		);
+		vi.stubGlobal("fetch", fetchSpy);
+
+		const result = await Effect.runPromise(
+			runWorker(store, {
+				pathId: "path-1",
+				headers: {
+					Authorization: "Bearer test-token",
+					"X-Custom-Header": "custom-value",
+					Cookie: "session=abc123",
+				},
+			}),
+		);
+
+		expect(result.success).toBe(true);
+		expect(fetchSpy).toHaveBeenCalledOnce();
+
+		const [, opts] = fetchSpy.mock.calls[0] as [string, RequestInit];
+		const headers = opts.headers as Record<string, string>;
+
+		expect(headers.Authorization).toBe("Bearer test-token");
+		expect(headers["X-Custom-Header"]).toBe("custom-value");
+		expect(headers.Cookie).toBe("session=abc123");
+		// Default headers should still be present
+		expect(headers.Accept).toBe("application/json");
+
+		vi.unstubAllGlobals();
+	});
+
+	it("custom headers override default Accept header", async () => {
+		const store = seedStore();
+
+		const fetchSpy = vi.fn().mockResolvedValue(
+			new Response("<html></html>", {
+				status: 200,
+				headers: { "content-type": "text/html" },
+			}),
+		);
+		vi.stubGlobal("fetch", fetchSpy);
+
+		await Effect.runPromise(
+			runWorker(store, {
+				pathId: "path-1",
+				headers: {
+					Accept: "text/html",
+				},
+			}),
+		);
+
+		const [, opts] = fetchSpy.mock.calls[0] as [string, RequestInit];
+		const headers = opts.headers as Record<string, string>;
+
+		// Custom Accept should override default
+		expect(headers.Accept).toBe("text/html");
 
 		vi.unstubAllGlobals();
 	});

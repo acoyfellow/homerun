@@ -50,6 +50,60 @@ The `data` field maps to the captured endpoint's request schema. If the scout fo
 Check the endpoint's `requestSchema` (from the scout result) to see exactly which fields are expected and their types.
 </Aside>
 
+## Authenticated endpoints
+
+For APIs that require authentication, pass custom headers:
+
+```json
+{
+  "pathId": "api-github-com-repos",
+  "data": {
+    "owner": "acoyfellow",
+    "repo": "unsurf"
+  },
+  "headers": {
+    "Authorization": "Bearer ghp_xxxxxxxxxxxx",
+    "Cookie": "session=abc123"
+  }
+}
+```
+
+Headers are merged into the outgoing request. Common use cases:
+
+| Header | Use case |
+|--------|----------|
+| `Authorization: Bearer <token>` | OAuth, JWT, API tokens |
+| `Authorization: Basic <base64>` | Basic auth |
+| `Cookie: session=...` | Session cookies |
+| `X-Api-Key: <key>` | API key authentication |
+
+<Aside type="tip">
+The directory shows which APIs require auth. Look for the 🔐 badge or check the `auth` field in the API metadata.
+</Aside>
+
+### With inbox.dog
+
+For sites that need login flows, pair unsurf with [inbox.dog](https://inbox.dog) for session management:
+
+```typescript
+import { worker } from "unsurf";
+import { getSession } from "inbox.dog";
+
+// inbox.dog handles login, cookies, token refresh
+const session = await getSession("github.com");
+
+// unsurf replays with those credentials
+const result = await worker({
+  pathId: "api-github-com-repos",
+  data: { owner: "acoyfellow", repo: "unsurf" },
+  headers: session.headers
+});
+```
+
+**Division of labor:**
+- **inbox.dog** — manages sessions (login flows, cookie jars, token refresh)
+- **unsurf** — manages structure (endpoints, schemas, replay)
+
 ## Reading the response
 
 ```json

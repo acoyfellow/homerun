@@ -89,9 +89,18 @@ function extractPathParams(pattern: string): Record<string, unknown>[] {
 	return params;
 }
 
-/** Convert :param to {param} for OpenAPI path format */
+/** Convert :param to {param} for OpenAPI path format and strip origin */
 function toOpenApiPath(pattern: string): string {
-	return pattern.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, "{$1}");
+	// Strip origin if pattern is a full URL
+	let path = pattern;
+	try {
+		const url = new URL(pattern);
+		path = url.pathname + url.search;
+	} catch {
+		// Not a valid URL, use as-is
+	}
+	// Convert :param to {param}
+	return path.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, "{$1}");
 }
 
 function groupByPath(endpoints: ReadonlyArray<CapturedEndpoint>): Map<string, CapturedEndpoint[]> {

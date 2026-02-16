@@ -341,6 +341,7 @@ const frontmatter = {
     height: 160px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
   }
   .card::before {
     content: '';
@@ -360,12 +361,9 @@ const frontmatter = {
   }
   .card-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 1rem;
-    margin-bottom: auto;
     position: relative;
-    flex: 1;
-    min-height: 0;
   }
   .card-icon {
     width: 40px;
@@ -692,6 +690,60 @@ const frontmatter = {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .endpoint-try {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.35rem 0.5rem;
+    cursor: pointer;
+    color: var(--text-3);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+  }
+  .endpoint-item:hover .endpoint-try {
+    opacity: 1;
+  }
+  .endpoint-try:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(139, 92, 246, 0.1);
+  }
+  .endpoint-try.loading {
+    opacity: 1;
+    pointer-events: none;
+  }
+  .endpoint-try.loading svg {
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .try-result {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+  .try-response {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    max-height: 200px;
+    overflow-y: auto;
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .try-response.error {
+    color: #ef4444;
+  }
+  .try-response.success {
+    color: #22c55e;
+  }
   .modal-footer {
     padding: 1.5rem 2rem;
     border-top: 1px solid var(--border);
@@ -914,13 +966,29 @@ const frontmatter = {
           <div class="modal-section">
             <div class="modal-section-title">Endpoints</div>
             <div class="endpoint-list">
-              ${endpoints.map(e => `
-                <div class="endpoint-item">
+              ${endpoints.map((e) => {
+                // Extract just the path from full URL
+                let displayPath = e.path;
+                try {
+                  const url = new URL(e.path);
+                  displayPath = url.pathname + url.search;
+                } catch {}
+                return `
+                <div class="endpoint-item" data-endpoint='${JSON.stringify(e).replace(/'/g, "&#39;")}'>
                   <span class="endpoint-method ${(e.method || 'GET').toLowerCase()}">${e.method || 'GET'}</span>
-                  <span class="endpoint-path">${e.path}</span>
-                </div>
-              `).join('')}
+                  <span class="endpoint-path">${displayPath}</span>
+                  <button class="endpoint-try" onclick="tryEndpoint(this)" title="Try this endpoint">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                  </button>
+                </div>`;
+              }).join('')}
             </div>
+          </div>
+          <div class="modal-section try-result" id="try-result" style="display:none">
+            <div class="modal-section-title">Response</div>
+            <pre class="try-response" id="try-response"></pre>
           </div>
         `;
       } else {
@@ -932,12 +1000,59 @@ const frontmatter = {
           Visit Site
         </a>
         <a class="modal-btn modal-btn-primary" href="${API}/d/${domain}/spec" target="_blank">
-          Download OpenAPI
+          View OpenAPI
         </a>
       `;
       
     } catch (err) {
       modalBody.innerHTML = '<div style="text-align:center;padding:2rem;color:#ef4444">Failed to load</div>';
+    }
+  }
+  
+  // Try endpoint directly
+  window.tryEndpoint = async function(btn) {
+    const item = btn.closest('.endpoint-item');
+    const endpoint = JSON.parse(item.dataset.endpoint);
+    const resultDiv = document.getElementById('try-result');
+    const responseDiv = document.getElementById('try-response');
+    
+    // Show loading
+    btn.classList.add('loading');
+    resultDiv.style.display = 'block';
+    responseDiv.className = 'try-response';
+    responseDiv.textContent = 'Loading...';
+    
+    try {
+      // For GET requests, try to call the endpoint directly
+      const url = endpoint.path.startsWith('http') ? endpoint.path : `https://${currentDomain}${endpoint.path}`;
+      const method = endpoint.method || 'GET';
+      
+      if (method === 'GET') {
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        const contentType = res.headers.get('content-type') || '';
+        let data;
+        if (contentType.includes('json')) {
+          data = await res.json();
+          responseDiv.textContent = JSON.stringify(data, null, 2);
+        } else {
+          data = await res.text();
+          responseDiv.textContent = data.slice(0, 2000) + (data.length > 2000 ? '...' : '');
+        }
+        responseDiv.className = 'try-response success';
+      } else {
+        responseDiv.textContent = `${method} requests require data. Use the API or MCP tool:\n\ncurl -X POST ${API}/tools/worker \\\n  -H "Content-Type: application/json" \\\n  -d '{"pathId": "...", "data": {...}}'`;
+        responseDiv.className = 'try-response';
+      }
+    } catch (err) {
+      // CORS error - suggest using worker
+      responseDiv.textContent = `Direct call blocked (CORS). Use the unsurf API:\n\ncurl -X POST ${API}/tools/worker \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "pathId": "...",\n    "headers": { "Authorization": "Bearer ..." }\n  }'`;
+      responseDiv.className = 'try-response error';
+    } finally {
+      btn.classList.remove('loading');
     }
   }
   
