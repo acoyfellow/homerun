@@ -1,0 +1,112 @@
+[
+	{ "url": "https://api.open-meteo.com", "task": "get weather forecast", "category": "weather" },
+	{
+		"url": "https://api.sunrise-sunset.org",
+		"task": "get sunrise sunset times",
+		"category": "weather"
+	},
+	{
+		"url": "https://restcountries.com",
+		"task": "get country information",
+		"category": "reference"
+	},
+	{
+		"url": "https://universities.hipolabs.com",
+		"task": "search universities",
+		"category": "reference"
+	},
+	{
+		"url": "https://world.openfoodfacts.org",
+		"task": "get food product info",
+		"category": "reference"
+	},
+	{ "url": "https://api.coingecko.com", "task": "get crypto prices", "category": "finance" },
+	{ "url": "https://api.frankfurter.app", "task": "get exchange rates", "category": "finance" },
+	{ "url": "https://pokeapi.co", "task": "get Pokemon data", "category": "entertainment" },
+	{
+		"url": "https://rickandmortyapi.com",
+		"task": "get Rick and Morty data",
+		"category": "entertainment"
+	},
+	{ "url": "https://swapi.dev", "task": "get Star Wars data", "category": "entertainment" },
+	{ "url": "https://api.tvmaze.com", "task": "get TV show info", "category": "entertainment" },
+	{ "url": "https://openlibrary.org", "task": "search books", "category": "entertainment" },
+	{
+		"url": "https://collectionapi.metmuseum.org",
+		"task": "get Met Museum art",
+		"category": "entertainment"
+	},
+	{ "url": "https://api.chess.com", "task": "get chess player stats", "category": "games" },
+	{ "url": "https://api.scryfall.com", "task": "search Magic cards", "category": "games" },
+	{ "url": "https://api.github.com", "task": "get GitHub repos", "category": "developer" },
+	{ "url": "https://api.npms.io", "task": "search npm packages", "category": "developer" },
+	{ "url": "https://httpbin.org", "task": "test HTTP requests", "category": "developer" },
+	{
+		"url": "https://jsonplaceholder.typicode.com",
+		"task": "get fake JSON data",
+		"category": "developer"
+	},
+	{ "url": "https://dummyjson.com", "task": "get dummy data", "category": "developer" },
+	{ "url": "https://randomuser.me", "task": "generate random users", "category": "developer" },
+	{ "url": "https://dog.ceo", "task": "get dog images", "category": "fun" },
+	{ "url": "https://catfact.ninja", "task": "get cat facts", "category": "fun" },
+	{ "url": "https://api.chucknorris.io", "task": "get Chuck Norris jokes", "category": "fun" },
+	{ "url": "https://icanhazdadjoke.com", "task": "get dad jokes", "category": "fun" },
+	{ "url": "https://www.themealdb.com", "task": "search recipes", "category": "food" },
+	{ "url": "https://www.thecocktaildb.com", "task": "search cocktails", "category": "food" },
+	{ "url": "https://api.openbrewerydb.org", "task": "search breweries", "category": "food" },
+	{ "url": "https://api.nasa.gov", "task": "get NASA data", "category": "science" },
+	{
+		"url": "https://hacker-news.firebaseio.com",
+		"task": "get Hacker News stories",
+		"category": "news"
+	},
+	{ "url": "https://en.wikipedia.org/w/api.php", "task": "search Wikipedia", "category": "news" },
+	{
+		"url": "https://nominatim.openstreetmap.org",
+		"task": "geocode addresses",
+		"category": "location"
+	},
+	{
+		"url": "https://api.dictionaryapi.dev",
+		"task": "get word definitions",
+		"category": "language"
+	},
+	{ "url": "https://worldtimeapi.org", "task": "get current time", "category": "time" },
+	{ "url": "https://date.nager.at", "task": "get public holidays", "category": "time" },
+	{ "url": "https://news.ycombinator.com", "task": "find top stories", "category": "saas_hard" },
+	{
+		"url": "https://www.producthunt.com",
+		"task": "find trending products",
+		"category": "saas_hard"
+	},
+	{
+		"url": "https://stripe.com/docs/api",
+		"task": "find API documentation endpoints",
+		"category": "saas_hard"
+	},
+	{
+		"url": "https://www.craigslist.org",
+		"task": "find classified listings",
+		"category": "ecommerce_hard"
+	},
+	{
+		"url": "https://www.etsy.com",
+		"task": "find product search API",
+		"category": "ecommerce_hard"
+	},
+	{ "url": "https://www.imdb.com", "task": "find movie data", "category": "content_hard" },
+	{ "url": "https://www.goodreads.com", "task": "find book data", "category": "content_hard" },
+	{ "url": "https://arxiv.org", "task": "search academic papers", "category": "content_hard" },
+	{ "url": "https://www.npmjs.com", "task": "search npm packages", "category": "developer_hard" },
+	{ "url": "https://crates.io", "task": "search Rust crates", "category": "developer_hard" },
+	{ "url": "https://pypi.org", "task": "search Python packages", "category": "developer_hard" },
+	{ "url": "https://hub.docker.com", "task": "search Docker images", "category": "developer_hard" },
+	{
+		"url": "https://www.zillow.com",
+		"task": "find real estate listings",
+		"category": "ecommerce_hard"
+	},
+	{ "url": "https://www.espn.com", "task": "find sports scores", "category": "content_hard" },
+	{ "url": "https://www.weather.com", "task": "get weather forecast", "category": "content_hard" }
+]
