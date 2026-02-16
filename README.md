@@ -6,6 +6,10 @@ Turn any website into a typed API.
 surf the web → unsurf it
 ```
 
+![Directory Screenshot](https://unsurf.coey.dev/directory-screenshot.png)
+
+**[Browse the API Directory →](https://unsurf.coey.dev/directory)**
+
 ## What it does
 
 An agent visits a site, captures every API call happening under the hood, and gives you back:
