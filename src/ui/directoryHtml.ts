@@ -1,5 +1,5 @@
 // Auto-generated from src/ui/directory.html
-// To update: edit directory.html then run the build script
+// Run: bash scripts/build-ui.sh
 
 export const directoryHtml = `
 <!DOCTYPE html>

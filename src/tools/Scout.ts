@@ -231,13 +231,38 @@ export const scout = (
 				lastScoutedAt: now,
 			});
 
+			// Extract endpoints from gallery spec so they're persisted for directory publish
+			const specPaths =
+				(galleryResult.spec as { paths?: Record<string, Record<string, unknown>> }).paths ?? {};
+			const galleryEndpoints: CapturedEndpoint[] = [];
+			for (const [pathPattern, methods] of Object.entries(specPaths)) {
+				for (const [method, _detail] of Object.entries(methods)) {
+					const upperMethod = method.toUpperCase();
+					if (!isValidMethod(upperMethod)) continue;
+					const epId = generateId("ep");
+					galleryEndpoints.push(
+						new CapturedEndpoint({
+							id: epId,
+							siteId,
+							method: upperMethod as HttpMethod,
+							pathPattern,
+							requestSchema: Option.none(),
+							responseSchema: Option.none(),
+							sampleCount: 0,
+							firstSeenAt: now,
+							lastSeenAt: now,
+						}),
+					);
+				}
+			}
+
 			const pathId = generateId("path");
 			const path = new ScoutedPath({
 				id: pathId,
 				siteId,
 				task: input.task,
 				steps: [new PathStep({ action: "navigate", url: input.url })],
-				endpointIds: [],
+				endpointIds: galleryEndpoints.map((ep) => ep.id),
 				status: "active",
 				createdAt: now,
 				lastUsedAt: Option.some(now),
@@ -246,7 +271,15 @@ export const scout = (
 			});
 
 			yield* store.saveSite(site);
+			if (galleryEndpoints.length > 0) {
+				yield* store.saveEndpoints(galleryEndpoints);
+			}
 			yield* store.savePath(path);
+
+			// Store the gallery spec so directory.publish can find it
+			const specBytes = new TextEncoder().encode(JSON.stringify(galleryResult.spec, null, 2));
+			yield* store.saveBlob(`specs/${siteId}/openapi.json`, specBytes);
+
 			yield* store.saveRun({
 				id: generateId("run"),
 				pathId: path.id,
@@ -255,16 +288,34 @@ export const scout = (
 				input: JSON.stringify({ url: input.url, task: input.task }),
 				output: JSON.stringify({
 					siteId: site.id,
-					endpointCount: galleryResult.entry.endpointCount,
+					endpointCount: galleryEndpoints.length,
 					pathId: path.id,
 					fromGallery: true,
 				}),
 				createdAt: now,
 			});
 
+			// Publish to gallery
+			yield* Effect.serviceOption(Gallery).pipe(
+				Effect.flatMap((galleryOpt) => {
+					if (Option.isNone(galleryOpt)) return Effect.void;
+					return galleryOpt.value.publish(siteId).pipe(Effect.catchAll(() => Effect.void));
+				}),
+			);
+
+			// Publish to directory if explicitly requested
+			if (input.publish === true) {
+				yield* Effect.serviceOption(Directory).pipe(
+					Effect.flatMap((dirOpt) => {
+						if (Option.isNone(dirOpt)) return Effect.void;
+						return dirOpt.value.publish(siteId).pipe(Effect.catchAll(() => Effect.void));
+					}),
+				);
+			}
+
 			return {
 				siteId,
-				endpointCount: galleryResult.entry.endpointCount,
+				endpointCount: galleryEndpoints.length,
 				pathId,
 				openApiSpec: galleryResult.spec,
 				fromGallery: true,
