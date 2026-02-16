@@ -25,3 +25,8 @@ export class NotFoundError extends Schema.TaggedError<NotFoundError>()("NotFound
 	id: Schema.String,
 	resource: Schema.optional(Schema.String),
 }) {}
+
+export class ValidationError extends Schema.TaggedError<ValidationError>()("ValidationError", {
+	field: Schema.String,
+	message: Schema.String,
+}) {}

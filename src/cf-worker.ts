@@ -270,6 +270,13 @@ export default {
 				const directory = buildDirectoryService(env);
 				const parts = url.pathname.slice(3).split("/").filter(Boolean);
 
+				// DELETE /d/:domain - remove from directory
+				if (request.method === "DELETE" && parts.length === 1) {
+					const domain = parts[0] ?? "";
+					await Effect.runPromise(directory.delete(domain));
+					return jsonResponse({ deleted: domain });
+				}
+
 				if (parts.length === 0) {
 					// GET /d/ - list all
 					const offset = Number(url.searchParams.get("offset") || 0);

@@ -1,5 +1,5 @@
 import { Context, Effect, Layer, Option } from "effect";
-import { NotFoundError, StoreError } from "../domain/Errors.js";
+import { NotFoundError, StoreError, ValidationError } from "../domain/Errors.js";
 import type {
 	Capability,
 	CapabilitySlice,
@@ -38,10 +38,13 @@ export interface DirectoryService {
 	publish: (
 		siteId: string,
 		contributor?: string,
-	) => Effect.Effect<Fingerprint, NotFoundError | StoreError>;
+	) => Effect.Effect<Fingerprint, NotFoundError | StoreError | ValidationError>;
 
 	/** List all domains (paginated) */
 	list: (offset?: number, limit?: number) => Effect.Effect<Fingerprint[], StoreError>;
+
+	/** Delete a domain from the directory (for cleanup) */
+	delete: (domain: string) => Effect.Effect<void, NotFoundError | StoreError>;
 }
 
 export class Directory extends Context.Tag("Directory")<Directory, DirectoryService>() {}
@@ -265,6 +268,45 @@ export function makeD1Directory(
 				const url = (site as { url: string }).url;
 				const now = nowISO();
 
+				// === VALIDATION: Require at least 1 endpoint ===
+				if (endpoints.length === 0) {
+					return yield* Effect.fail(
+						new ValidationError({
+							field: "endpoints",
+							message: "No endpoints captured - cannot publish empty API",
+						}),
+					);
+				}
+
+				// === VALIDATION: Require OpenAPI spec to exist ===
+				const scoutSpecKey = `specs/${siteId}/openapi.json`;
+				const specCheck = yield* tryD1(() => storage.get(scoutSpecKey));
+				if (!specCheck) {
+					return yield* Effect.fail(
+						new ValidationError({
+							field: "spec",
+							message: "OpenAPI spec not found - scout may have failed",
+						}),
+					);
+				}
+
+				// === VALIDATION: Verify spec is valid JSON with paths ===
+				const specBody = yield* tryD1(() => specCheck.arrayBuffer());
+				let specJson: Record<string, unknown>;
+				try {
+					specJson = JSON.parse(new TextDecoder().decode(specBody));
+				} catch {
+					return yield* Effect.fail(
+						new ValidationError({ field: "spec", message: "OpenAPI spec is not valid JSON" }),
+					);
+				}
+				const specPaths = specJson.paths as Record<string, unknown> | undefined;
+				if (!specPaths || Object.keys(specPaths).length === 0) {
+					return yield* Effect.fail(
+						new ValidationError({ field: "spec", message: "OpenAPI spec has no paths defined" }),
+					);
+				}
+
 				// Classify endpoints and compute stats
 				const capabilitySet = new Set<string>();
 				const methodCounts: Record<string, number> = {};
@@ -404,13 +446,8 @@ export function makeD1Directory(
 					yield* tryD1(() => vectors.insert(vectorsToInsert));
 				}
 
-				// Copy the OpenAPI spec from scout storage to directory storage
-				const scoutSpecKey = `specs/${siteId}/openapi.json`;
-				const specObj = yield* tryD1(() => storage.get(scoutSpecKey));
-				if (specObj) {
-					const specBody = yield* tryD1(() => specObj.arrayBuffer());
-					yield* tryD1(() => storage.put(specKey, specBody));
-				}
+				// Copy the validated OpenAPI spec to directory storage
+				yield* tryD1(() => storage.put(specKey, specBody));
 
 				return {
 					domain,
@@ -437,6 +474,31 @@ export function makeD1Directory(
 					(result.results as unknown as RawFingerprintRow[]).map(rowToFingerprint),
 				),
 			),
+
+		delete: (domain) =>
+			Effect.gen(function* () {
+				// Get fingerprint ID
+				const fp = yield* tryD1(() =>
+					db.prepare("SELECT id, spec_key FROM fingerprints WHERE domain = ?").bind(domain).first(),
+				);
+				if (!fp)
+					return yield* Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
+
+				const { id, spec_key } = fp as { id: string; spec_key: string };
+
+				// Delete endpoints
+				yield* tryD1(() =>
+					db.prepare("DELETE FROM directory_endpoints WHERE fingerprint_id = ?").bind(id).run(),
+				);
+
+				// Delete fingerprint
+				yield* tryD1(() => db.prepare("DELETE FROM fingerprints WHERE id = ?").bind(id).run());
+
+				// Delete spec from R2
+				if (spec_key) {
+					yield* tryD1(() => storage.delete(spec_key));
+				}
+			}),
 	};
 }
 
@@ -693,6 +755,14 @@ export function makeTestDirectory(store: StoreService): DirectoryService {
 				.sort((a, b) => new Date(b.lastScouted).getTime() - new Date(a.lastScouted).getTime())
 				.slice(offset, offset + limit);
 			return Effect.succeed(all as Fingerprint[]);
+		},
+
+		delete: (domain) => {
+			if (!fingerprints.has(domain)) {
+				return Effect.fail(new NotFoundError({ id: domain, resource: "fingerprint" }));
+			}
+			fingerprints.delete(domain);
+			return Effect.void;
 		},
 	};
 }
