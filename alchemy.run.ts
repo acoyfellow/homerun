@@ -1,6 +1,7 @@
 import alchemy, { type StateStoreType } from "alchemy";
 import type { Binding } from "alchemy/cloudflare";
 import {
+	Ai,
 	BrowserRendering,
 	CustomDomain,
 	D1Database,
@@ -43,13 +44,15 @@ const VECTORS = await VectorizeIndex("unsurf-vectors", {
 	adopt: true,
 });
 
+const AI = Ai();
+
 const bindings: Record<string, Binding> = {
 	DB,
 	STORAGE,
 	BROWSER,
 	CACHE,
 	VECTORS,
-	AI: { binding: "AI" } as unknown as Binding, // Workers AI binding
+	AI,
 };
 
 // Optional: pass Anthropic API key for LLM-guided scout
