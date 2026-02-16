@@ -91,6 +91,12 @@ export {
 
 // Utilities
 export { normalizeUrlPattern, extractDomain } from "./lib/url.js";
+export {
+	validateEndpoint,
+	validateSite,
+	validateSiteEffect,
+} from "./lib/validate.js";
+export type { ValidationResult, SiteValidation } from "./lib/validate.js";
 
 // Codegen
 export { generateClient } from "./lib/codegen.js";
