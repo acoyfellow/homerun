@@ -61,12 +61,30 @@ const frontmatter = {
       </div>
 
       <!-- CONTRIBUTE -->
-      <footer class="contribute">
-        <div class="contribute-inner">
-          <span class="contribute-label">Add yours</span>
-          <code>npx unsurf scout https://… --publish</code>
+      <!-- SUBMIT FORM -->
+      <section class="submit-section" id="submit-section">
+        <div class="submit-header">
+          <h2 class="submit-title">Add an API</h2>
+          <p class="submit-desc">Scout a site and publish it to the directory</p>
         </div>
-      </footer>
+        <form class="submit-form" id="submit-form">
+          <div class="submit-input-wrap">
+            <input 
+              type="url" 
+              id="submit-url" 
+              placeholder="https://api.example.com" 
+              required 
+              autocomplete="off"
+            />
+            <button type="submit" id="submit-btn">
+              <span class="submit-btn-text">Scout & Publish</span>
+              <span class="submit-btn-loading">Scouting...</span>
+            </button>
+          </div>
+          <div class="submit-status" id="submit-status"></div>
+        </form>
+        <p class="submit-alt">or via CLI: <code>npx unsurf scout https://… --publish</code></p>
+      </section>
     </div>
 
     <!-- MODAL -->
@@ -320,6 +338,9 @@ const frontmatter = {
     transition: all 0.25s ease;
     overflow: hidden;
     box-shadow: var(--card-shadow);
+    height: 160px;
+    display: flex;
+    flex-direction: column;
   }
   .card::before {
     content: '';
@@ -341,8 +362,10 @@ const frontmatter = {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: auto;
     position: relative;
+    flex: 1;
+    min-height: 0;
   }
   .card-icon {
     width: 40px;
@@ -427,24 +450,102 @@ const frontmatter = {
   }
 
   /* ===== CONTRIBUTE ===== */
-  .contribute {
+  /* ===== SUBMIT FORM ===== */
+  .submit-section {
     margin-top: 4rem;
-    text-align: center;
-  }
-  .contribute-inner {
-    display: inline-flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
+    padding: 2.5rem;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 20px;
+    text-align: center;
   }
-  .contribute-label {
+  .submit-header {
+    margin-bottom: 1.5rem;
+  }
+  .submit-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-1);
+    margin: 0 0 0.5rem;
+  }
+  .submit-desc {
+    font-size: 0.9rem;
+    color: var(--text-3);
+    margin: 0;
+  }
+  .submit-form {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .submit-input-wrap {
+    display: flex;
+    gap: 0.75rem;
+  }
+  .submit-input-wrap input {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+    background: var(--sl-color-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-1);
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .submit-input-wrap input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .submit-input-wrap button {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .submit-input-wrap button:hover:not(:disabled) {
+    background: #7c3aed;
+  }
+  .submit-input-wrap button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  .submit-btn-loading {
+    display: none;
+  }
+  .submit-form.loading .submit-btn-text {
+    display: none;
+  }
+  .submit-form.loading .submit-btn-loading {
+    display: inline;
+  }
+  .submit-status {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    min-height: 1.5rem;
+  }
+  .submit-status.success {
+    color: #22c55e;
+  }
+  .submit-status.error {
+    color: #ef4444;
+  }
+  .submit-alt {
+    margin-top: 1.5rem;
     font-size: 0.8rem;
     color: var(--text-3);
   }
-  .contribute code {
+  .submit-alt code {
+    color: var(--accent);
+    background: none;
+  }
+
+  .contribute {
     font-size: 0.85rem;
     color: var(--accent);
     background: none;
@@ -885,6 +986,75 @@ const frontmatter = {
   modalClose.addEventListener('click', closeModal);
   modalOverlay.addEventListener('click', (e) => {
     if (e.target === modalOverlay) closeModal();
+  });
+  
+  // Submit form
+  const submitForm = document.getElementById('submit-form');
+  const submitUrl = document.getElementById('submit-url');
+  const submitBtn = document.getElementById('submit-btn');
+  const submitStatus = document.getElementById('submit-status');
+  
+  submitForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const url = submitUrl.value.trim();
+    if (!url) return;
+    
+    submitForm.classList.add('loading');
+    submitBtn.disabled = true;
+    submitStatus.className = 'submit-status';
+    submitStatus.textContent = '';
+    
+    try {
+      // First scout the URL
+      submitStatus.textContent = 'Scouting site...';
+      const scoutRes = await fetch(`${API}/tools/scout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, task: 'explore the API' })
+      });
+      
+      if (!scoutRes.ok) {
+        const err = await scoutRes.text();
+        throw new Error(err || 'Scout failed');
+      }
+      
+      const scoutData = await scoutRes.json();
+      
+      if (!scoutData.endpoints?.length) {
+        throw new Error('No API endpoints found on this site');
+      }
+      
+      // Then publish to directory
+      submitStatus.textContent = 'Publishing to directory...';
+      const publishRes = await fetch(`${API}/d/publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: scoutData.url || url,
+          endpoints: scoutData.endpoints,
+          openapi: scoutData.openapi
+        })
+      });
+      
+      if (!publishRes.ok) {
+        const err = await publishRes.text();
+        throw new Error(err || 'Publish failed');
+      }
+      
+      submitStatus.className = 'submit-status success';
+      submitStatus.textContent = `✓ Published ${scoutData.endpoints.length} endpoints`;
+      submitUrl.value = '';
+      
+      // Refresh the list
+      setTimeout(() => location.reload(), 1500);
+      
+    } catch (err) {
+      submitStatus.className = 'submit-status error';
+      submitStatus.textContent = `✗ ${err.message}`;
+    } finally {
+      submitForm.classList.remove('loading');
+      submitBtn.disabled = false;
+    }
   });
   
   // Init
