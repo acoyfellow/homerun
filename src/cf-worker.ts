@@ -16,6 +16,7 @@ import { Store, StoreD1Live, makeD1Store } from "./services/Store.js";
 import { heal } from "./tools/Heal.js";
 import { scout } from "./tools/Scout.js";
 import { worker } from "./tools/Worker.js";
+import directoryHtml from "./ui/directory.html";
 
 interface Env {
 	DB: D1Database;
@@ -172,8 +173,18 @@ export default {
 			return new Response(null, { headers: corsHeaders() });
 		}
 
-		// Health check
-		if (url.pathname === "/") {
+		// Directory UI (homepage)
+		if (url.pathname === "/" || url.pathname === "/directory") {
+			return new Response(directoryHtml, {
+				headers: {
+					"Content-Type": "text/html; charset=utf-8",
+					...corsHeaders(),
+				},
+			});
+		}
+
+		// API info endpoint
+		if (url.pathname === "/api") {
 			return jsonResponse({
 				name: "unsurf",
 				version: "0.3.0",
