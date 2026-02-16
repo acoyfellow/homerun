@@ -577,7 +577,7 @@ cd unsurf && bun install && bun run deploy</code></pre>
           ? '<span class="api-auth-badge auth">🔐 Auth</span>'
           : '<span class="api-auth-badge public">🔓 Public</span>';
         
-        return '<div class="api-card" onclick="showDetail(\'' + fp.domain + '\')">' +
+        return '<div class="api-card" data-domain="' + fp.domain + '" onclick="showDetail(this.dataset.domain)">' +
           '<div class="api-card-header">' +
             '<span class="api-domain">' + fp.domain + '</span>' +
             authBadge +
