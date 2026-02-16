@@ -15,14 +15,15 @@ const shouldRenderSearch =
 	config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro';
 ---
 
-<div class="header">
+<div class="nav-inner">
+	<div class="header">
 	<div class="title-wrapper sl-flex">
 		<SiteTitle />
 		<nav class="main-nav sl-flex" aria-label="Main">
 			<a href="/directory" class="nav-link">Directory</a>
 		</nav>
 	</div>
-	<div class="sl-flex print:hidden">
+	<div class="search-wrapper sl-flex print:hidden">
 		{shouldRenderSearch && <Search />}
 	</div>
 	<div class="sl-hidden md:sl-flex print:hidden right-group">
@@ -31,6 +32,7 @@ const shouldRenderSearch =
 		</div>
 		<ThemeSelect />
 		<LanguageSelect />
+	</div>
 	</div>
 </div>
 
@@ -42,6 +44,8 @@ const shouldRenderSearch =
 			justify-content: space-between;
 			align-items: center;
 			height: 100%;
+			width: 100%;
+			min-width: 0;
 		}
 
 		.title-wrapper {
@@ -49,7 +53,8 @@ const shouldRenderSearch =
 			padding: 0.25rem;
 			margin: -0.25rem;
 			min-width: 0;
-			gap: 1.5rem;
+			gap: 1rem;
+			flex-shrink: 0;
 		}
 
 		.main-nav {
@@ -66,43 +71,22 @@ const shouldRenderSearch =
 			text-decoration: underline;
 		}
 
+		.search-wrapper {
+			flex: 1;
+			min-width: 0;
+			justify-content: center;
+		}
+
 		.right-group,
 		.social-icons {
 			gap: 1rem;
 			align-items: center;
+			flex-shrink: 0;
 		}
 		.social-icons::after {
 			content: '';
 			height: 2rem;
 			border-inline-end: 1px solid var(--sl-color-gray-5);
-		}
-
-		@media (min-width: 50rem) {
-			:global(:root[data-has-sidebar]) {
-				--__sidebar-pad: calc(2 * var(--sl-nav-pad-x));
-			}
-			:global(:root:not([data-has-toc])) {
-				--__toc-width: 0rem;
-			}
-			.header {
-				--__sidebar-width: max(0rem, var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x));
-				--__main-column-fr: calc(
-					(
-							100% + var(--__sidebar-pad, 0rem) - var(--__toc-width, var(--sl-sidebar-width)) -
-								(2 * var(--__toc-width, var(--sl-nav-pad-x))) - var(--sl-content-inline-start, 0rem) -
-								var(--sl-content-width)
-						) / 2
-				);
-				display: grid;
-				grid-template-columns:
-					minmax(
-						calc(var(--__sidebar-width) + max(0rem, var(--__main-column-fr) - var(--sl-nav-gap))),
-						auto
-					)
-					1fr
-					auto;
-				align-content: center;
-			}
 		}
 	}
 </style>
