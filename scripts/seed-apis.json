@@ -1,172 +1,168 @@
 {
-  "_meta": {
-    "description": "Curated public APIs for unsurf directory",
-    "total": 75,
-    "criteria": "No auth or simple key, stable, useful for agents"
-  },
-  "apis": [
-    {
-      "category": "Weather",
-      "sites": [
-        { "url": "https://api.open-meteo.com", "task": "get weather forecast" },
-        { "url": "https://api.weather.gov", "task": "get US weather alerts" },
-        { "url": "https://api.sunrise-sunset.org", "task": "get sunrise sunset times" }
-      ]
-    },
-    {
-      "category": "Reference Data",
-      "sites": [
-        { "url": "https://restcountries.com", "task": "get country information" },
-        { "url": "https://api.zippopotam.us", "task": "lookup zip codes" },
-        { "url": "https://universities.hipolabs.com", "task": "search universities" },
-        { "url": "https://api.fda.gov", "task": "search FDA drug data" },
-        { "url": "https://world.openfoodfacts.org", "task": "get food product info" },
-        { "url": "https://api.fiscaldata.treasury.gov", "task": "get US treasury data" }
-      ]
-    },
-    {
-      "category": "Finance",
-      "sites": [
-        { "url": "https://api.coingecko.com", "task": "get crypto prices" },
-        { "url": "https://api.frankfurter.app", "task": "get exchange rates" }
-      ]
-    },
-    {
-      "category": "Entertainment",
-      "sites": [
-        { "url": "https://pokeapi.co", "task": "get Pokemon data" },
-        { "url": "https://rickandmortyapi.com", "task": "get Rick and Morty data" },
-        { "url": "https://swapi.dev", "task": "get Star Wars data" },
-        { "url": "https://api.jikan.moe", "task": "get anime data" },
-        { "url": "https://api.tvmaze.com", "task": "get TV show info" },
-        { "url": "https://itunes.apple.com", "task": "search iTunes" },
-        { "url": "https://openlibrary.org", "task": "search books" },
-        { "url": "https://gutendex.com", "task": "search Gutenberg books" },
-        { "url": "https://api.artic.edu/api", "task": "get art collection data" },
-        { "url": "https://collectionapi.metmuseum.org", "task": "get Met Museum art" },
-        { "url": "https://xkcd.com", "task": "get XKCD comics" }
-      ]
-    },
-    {
-      "category": "Games",
-      "sites": [
-        { "url": "https://api.chess.com", "task": "get chess player stats" },
-        { "url": "https://api.scryfall.com", "task": "search Magic cards" },
-        { "url": "https://deckofcardsapi.com", "task": "shuffle deck of cards" },
-        { "url": "https://api.open5e.com", "task": "get D&D 5e data" }
-      ]
-    },
-    {
-      "category": "Developer",
-      "sites": [
-        { "url": "https://api.github.com", "task": "get GitHub repos" },
-        { "url": "https://api.npms.io", "task": "search npm packages" },
-        { "url": "https://httpbin.org", "task": "test HTTP requests" },
-        { "url": "https://jsonplaceholder.typicode.com", "task": "get fake JSON data" },
-        { "url": "https://dummyjson.com", "task": "get dummy data" },
-        { "url": "https://randomuser.me", "task": "generate random users" },
-        { "url": "https://ipinfo.io", "task": "get IP geolocation" }
-      ]
-    },
-    {
-      "category": "Fun",
-      "sites": [
-        { "url": "https://dog.ceo", "task": "get dog images" },
-        { "url": "https://api.thecatapi.com", "task": "get cat images" },
-        { "url": "https://catfact.ninja", "task": "get cat facts" },
-        { "url": "https://api.chucknorris.io", "task": "get Chuck Norris jokes" },
-        { "url": "https://icanhazdadjoke.com", "task": "get dad jokes" },
-        { "url": "https://api.quotable.io", "task": "get random quotes" },
-        { "url": "https://www.boredapi.com", "task": "get activity ideas" }
-      ]
-    },
-    {
-      "category": "Food & Drink",
-      "sites": [
-        { "url": "https://www.themealdb.com", "task": "search recipes" },
-        { "url": "https://www.thecocktaildb.com", "task": "search cocktails" },
-        { "url": "https://api.punkapi.com", "task": "get beer data" },
-        { "url": "https://api.openbrewerydb.org", "task": "search breweries" }
-      ]
-    },
-    {
-      "category": "Science & Space",
-      "sites": [
-        { "url": "https://api.nasa.gov", "task": "get NASA data" },
-        { "url": "https://api.spacexdata.com", "task": "get SpaceX launches" },
-        { "url": "https://api.le-systeme-solaire.net", "task": "get solar system data" }
-      ]
-    },
-    {
-      "category": "News & Social",
-      "sites": [
-        { "url": "https://hacker-news.firebaseio.com", "task": "get Hacker News" },
-        { "url": "https://www.reddit.com", "task": "get Reddit posts" },
-        { "url": "https://en.wikipedia.org/w/api.php", "task": "search Wikipedia" }
-      ]
-    },
-    {
-      "category": "Location",
-      "sites": [
-        { "url": "https://nominatim.openstreetmap.org", "task": "geocode addresses" },
-        { "url": "https://api.postcodes.io", "task": "lookup UK postcodes" },
-        { "url": "https://api.wheretheiss.at", "task": "track ISS location" }
-      ]
-    },
-    {
-      "category": "Language",
-      "sites": [
-        { "url": "https://api.dictionaryapi.dev", "task": "get word definitions" },
-        { "url": "https://api.datamuse.com", "task": "find related words" }
-      ]
-    },
-    {
-      "category": "Government",
-      "sites": [
-        { "url": "https://api.fbi.gov", "task": "get FBI wanted list" },
-        { "url": "https://api.congress.gov", "task": "get Congress bills" },
-        { "url": "https://vpic.nhtsa.dot.gov/api", "task": "decode VIN numbers" }
-      ]
-    },
-    {
-      "category": "Time",
-      "sites": [
-        { "url": "https://worldtimeapi.org", "task": "get current time" },
-        { "url": "https://date.nager.at", "task": "get public holidays" }
-      ]
-    },
-    {
-      "category": "Sports",
-      "sites": [
-        { "url": "https://www.thesportsdb.com/api", "task": "get sports data" },
-        { "url": "https://ergast.com/api", "task": "get F1 racing data" },
-        { "url": "https://api.balldontlie.io", "task": "get NBA stats" }
-      ]
-    },
-    {
-      "category": "Jobs & Business",
-      "sites": [
-        { "url": "https://remotive.com/api", "task": "search remote jobs" },
-        { "url": "https://arbeitnow.com/api", "task": "search jobs" }
-      ]
-    },
-    {
-      "category": "Aviation",
-      "sites": [
-        { "url": "https://aviationstack.com/api", "task": "get flight data" }
-      ]
-    },
-    {
-      "category": "Plants",
-      "sites": [
-        { "url": "https://perenual.com/api", "task": "get plant data" }
-      ]
-    },
-    {
-      "category": "Podcasts",
-      "sites": [
-        { "url": "https://itunes.apple.com/search?media=podcast", "task": "search podcasts" }
-      ]
-    }
-  ]
+	"_meta": {
+		"description": "Curated public APIs for unsurf directory",
+		"total": 75,
+		"criteria": "No auth or simple key, stable, useful for agents"
+	},
+	"apis": [
+		{
+			"category": "Weather",
+			"sites": [
+				{ "url": "https://api.open-meteo.com", "task": "get weather forecast" },
+				{ "url": "https://api.weather.gov", "task": "get US weather alerts" },
+				{ "url": "https://api.sunrise-sunset.org", "task": "get sunrise sunset times" }
+			]
+		},
+		{
+			"category": "Reference Data",
+			"sites": [
+				{ "url": "https://restcountries.com", "task": "get country information" },
+				{ "url": "https://api.zippopotam.us", "task": "lookup zip codes" },
+				{ "url": "https://universities.hipolabs.com", "task": "search universities" },
+				{ "url": "https://api.fda.gov", "task": "search FDA drug data" },
+				{ "url": "https://world.openfoodfacts.org", "task": "get food product info" },
+				{ "url": "https://api.fiscaldata.treasury.gov", "task": "get US treasury data" }
+			]
+		},
+		{
+			"category": "Finance",
+			"sites": [
+				{ "url": "https://api.coingecko.com", "task": "get crypto prices" },
+				{ "url": "https://api.frankfurter.app", "task": "get exchange rates" }
+			]
+		},
+		{
+			"category": "Entertainment",
+			"sites": [
+				{ "url": "https://pokeapi.co", "task": "get Pokemon data" },
+				{ "url": "https://rickandmortyapi.com", "task": "get Rick and Morty data" },
+				{ "url": "https://swapi.dev", "task": "get Star Wars data" },
+				{ "url": "https://api.jikan.moe", "task": "get anime data" },
+				{ "url": "https://api.tvmaze.com", "task": "get TV show info" },
+				{ "url": "https://itunes.apple.com", "task": "search iTunes" },
+				{ "url": "https://openlibrary.org", "task": "search books" },
+				{ "url": "https://gutendex.com", "task": "search Gutenberg books" },
+				{ "url": "https://api.artic.edu/api", "task": "get art collection data" },
+				{ "url": "https://collectionapi.metmuseum.org", "task": "get Met Museum art" },
+				{ "url": "https://xkcd.com", "task": "get XKCD comics" }
+			]
+		},
+		{
+			"category": "Games",
+			"sites": [
+				{ "url": "https://api.chess.com", "task": "get chess player stats" },
+				{ "url": "https://api.scryfall.com", "task": "search Magic cards" },
+				{ "url": "https://deckofcardsapi.com", "task": "shuffle deck of cards" },
+				{ "url": "https://api.open5e.com", "task": "get D&D 5e data" }
+			]
+		},
+		{
+			"category": "Developer",
+			"sites": [
+				{ "url": "https://api.github.com", "task": "get GitHub repos" },
+				{ "url": "https://api.npms.io", "task": "search npm packages" },
+				{ "url": "https://httpbin.org", "task": "test HTTP requests" },
+				{ "url": "https://jsonplaceholder.typicode.com", "task": "get fake JSON data" },
+				{ "url": "https://dummyjson.com", "task": "get dummy data" },
+				{ "url": "https://randomuser.me", "task": "generate random users" },
+				{ "url": "https://ipinfo.io", "task": "get IP geolocation" }
+			]
+		},
+		{
+			"category": "Fun",
+			"sites": [
+				{ "url": "https://dog.ceo", "task": "get dog images" },
+				{ "url": "https://api.thecatapi.com", "task": "get cat images" },
+				{ "url": "https://catfact.ninja", "task": "get cat facts" },
+				{ "url": "https://api.chucknorris.io", "task": "get Chuck Norris jokes" },
+				{ "url": "https://icanhazdadjoke.com", "task": "get dad jokes" },
+				{ "url": "https://api.quotable.io", "task": "get random quotes" },
+				{ "url": "https://www.boredapi.com", "task": "get activity ideas" }
+			]
+		},
+		{
+			"category": "Food & Drink",
+			"sites": [
+				{ "url": "https://www.themealdb.com", "task": "search recipes" },
+				{ "url": "https://www.thecocktaildb.com", "task": "search cocktails" },
+				{ "url": "https://api.punkapi.com", "task": "get beer data" },
+				{ "url": "https://api.openbrewerydb.org", "task": "search breweries" }
+			]
+		},
+		{
+			"category": "Science & Space",
+			"sites": [
+				{ "url": "https://api.nasa.gov", "task": "get NASA data" },
+				{ "url": "https://api.spacexdata.com", "task": "get SpaceX launches" },
+				{ "url": "https://api.le-systeme-solaire.net", "task": "get solar system data" }
+			]
+		},
+		{
+			"category": "News & Social",
+			"sites": [
+				{ "url": "https://hacker-news.firebaseio.com", "task": "get Hacker News" },
+				{ "url": "https://www.reddit.com", "task": "get Reddit posts" },
+				{ "url": "https://en.wikipedia.org/w/api.php", "task": "search Wikipedia" }
+			]
+		},
+		{
+			"category": "Location",
+			"sites": [
+				{ "url": "https://nominatim.openstreetmap.org", "task": "geocode addresses" },
+				{ "url": "https://api.postcodes.io", "task": "lookup UK postcodes" },
+				{ "url": "https://api.wheretheiss.at", "task": "track ISS location" }
+			]
+		},
+		{
+			"category": "Language",
+			"sites": [
+				{ "url": "https://api.dictionaryapi.dev", "task": "get word definitions" },
+				{ "url": "https://api.datamuse.com", "task": "find related words" }
+			]
+		},
+		{
+			"category": "Government",
+			"sites": [
+				{ "url": "https://api.fbi.gov", "task": "get FBI wanted list" },
+				{ "url": "https://api.congress.gov", "task": "get Congress bills" },
+				{ "url": "https://vpic.nhtsa.dot.gov/api", "task": "decode VIN numbers" }
+			]
+		},
+		{
+			"category": "Time",
+			"sites": [
+				{ "url": "https://worldtimeapi.org", "task": "get current time" },
+				{ "url": "https://date.nager.at", "task": "get public holidays" }
+			]
+		},
+		{
+			"category": "Sports",
+			"sites": [
+				{ "url": "https://www.thesportsdb.com/api", "task": "get sports data" },
+				{ "url": "https://ergast.com/api", "task": "get F1 racing data" },
+				{ "url": "https://api.balldontlie.io", "task": "get NBA stats" }
+			]
+		},
+		{
+			"category": "Jobs & Business",
+			"sites": [
+				{ "url": "https://remotive.com/api", "task": "search remote jobs" },
+				{ "url": "https://arbeitnow.com/api", "task": "search jobs" }
+			]
+		},
+		{
+			"category": "Aviation",
+			"sites": [{ "url": "https://aviationstack.com/api", "task": "get flight data" }]
+		},
+		{
+			"category": "Plants",
+			"sites": [{ "url": "https://perenual.com/api", "task": "get plant data" }]
+		},
+		{
+			"category": "Podcasts",
+			"sites": [
+				{ "url": "https://itunes.apple.com/search?media=podcast", "task": "search podcasts" }
+			]
+		}
+	]
 }
