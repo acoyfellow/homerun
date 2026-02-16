@@ -43,11 +43,15 @@ function resolveUrl(pattern: string, data: Record<string, unknown> | undefined):
 
 const replayEndpoint = (
 	endpoint: CapturedEndpoint,
+	baseUrl: string,
 	data: Record<string, unknown> | undefined,
 	customHeaders: Record<string, string> | undefined,
 ): Effect.Effect<unknown, NetworkError> =>
 	Effect.gen(function* () {
-		const url = resolveUrl(endpoint.pathPattern, data);
+		const resolvedPath = resolveUrl(endpoint.pathPattern, data);
+		const url = resolvedPath.startsWith("http")
+			? resolvedPath
+			: `${baseUrl.replace(/\/$/, "")}${resolvedPath}`;
 		const method = endpoint.method as HttpMethod;
 
 		const hasBody = ["POST", "PUT", "PATCH"].includes(method);
@@ -146,8 +150,8 @@ export const worker = (
 			return { success: false, response: "No matching endpoint" };
 		}
 
-		// 4. Replay the endpoint
-		const response = yield* replayEndpoint(endpoint, input.data, input.headers);
+		const site = yield* store.getSite(path.siteId);
+		const response = yield* replayEndpoint(endpoint, site.url, input.data, input.headers);
 
 		// 5. Save run history
 		yield* saveWorkerRun(input.pathId, true, input.data, response);
