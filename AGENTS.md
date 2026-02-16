@@ -22,11 +22,14 @@
 ```
 src/
 ├── cf-worker.ts              # Worker entry point
+├── mcp.ts                    # MCP server entry point
+├── cli.ts                    # CLI (unsurf search/lookup/publish)
 ├── domain/                   # Effect Schema types
 ├── db/                       # Drizzle schema + queries  
-├── services/                 # Browser, Store, SchemaInferrer, OpenApiGenerator
+├── services/                 # Browser, Store, SchemaInferrer, OpenApiGenerator, Gallery, Directory
 ├── tools/                    # Scout, Worker, Heal
-└── ai/                       # LLM Scout Agent
+├── ai/                       # LLM Scout Agent (ScoutAgent, AnthropicProvider)
+└── ui/                       # HTML generators (directory page)
 ```
 
 ## Directory
@@ -36,12 +39,15 @@ The **API Directory** is a community registry of unsurfed APIs at `/directory`.
 ### Endpoints
 
 ```
-GET  /d/                      # List all fingerprints
-GET  /d/:domain               # Get domain info + capabilities  
-GET  /d/:domain/:capability   # Get endpoints for capability
-GET  /d/:domain/spec          # Get OpenAPI spec
-POST /d/publish               # Publish scouted API to directory
-GET  /search?q=...            # Search directory
+GET    /d/                       # List all fingerprints
+GET    /d/:domain                # Get domain info + capabilities  
+GET    /d/:domain/:capability    # Get endpoints for capability
+GET    /d/:domain/:method/:path  # Get specific endpoint details
+GET    /d/:domain/spec           # Get OpenAPI spec
+POST   /d/publish                # Publish scouted API to directory
+POST   /d/validate               # Validate before publishing
+DELETE /d/:domain                # Remove from directory
+GET    /search?q=...             # Semantic search across directory
 ```
 
 ### Seeding

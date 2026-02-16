@@ -73,7 +73,7 @@ function errText(message: string) {
 
 export function createMcpServer(env: Env): McpServer {
 	const server = new McpServer(
-		{ name: "unsurf", version: "0.1.0" },
+		{ name: "unsurf", version: "0.2.0" },
 		{ capabilities: { tools: {} } },
 	);
 

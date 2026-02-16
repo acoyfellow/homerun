@@ -108,7 +108,7 @@ Execute a scouted path. Skips the browser — replays the API calls directly.
 {
   "tool": "worker",
   "input": {
-    "path_id": "example-com-contact-form",
+    "pathId": "example-com-contact-form",
     "data": {
       "name": "Jane Doe",
       "email": "jane@example.com",
@@ -126,7 +126,7 @@ Site changed? Path broken? Heal re-scouts, diffs, patches, retries.
 {
   "tool": "heal",
   "input": {
-    "path_id": "example-com-contact-form",
+    "pathId": "example-com-contact-form",
     "error": "Form field 'email' not found"
   }
 }
@@ -179,12 +179,17 @@ unsurf/
 │   │   ├── Browser.ts            # CF browser rendering
 │   │   ├── Store.ts              # D1 (via Drizzle) + R2
 │   │   ├── SchemaInferrer.ts     # JSON → Schema
-│   │   └── OpenApiGenerator.ts   # Endpoints → OpenAPI
+│   │   ├── OpenApiGenerator.ts   # Endpoints → OpenAPI
+│   │   ├── Gallery.ts            # Gallery service
+│   │   └── Directory.ts          # Directory service
+│   ├── cli.ts                    # CLI entry point
+│   ├── mcp.ts                    # MCP server entry point
+│   ├── ui/                       # UI components
 │   ├── tools/                    # MCP tool implementations
 │   │   ├── Scout.ts
 │   │   ├── Worker.ts
 │   │   └── Heal.ts
-│   ├── ai/                       # LLM scout agent (planned)
+│   ├── ai/                       # LLM Scout Agent
 │   └── lib/                      # Utilities
 │       └── url.ts                # URL pattern normalization
 ├── migrations/                   # Drizzle-generated SQL migrations

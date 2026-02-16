@@ -44,7 +44,7 @@ Open Cursor Settings → MCP Servers → **Add Server** and enter:
 | Transport | `Streamable HTTP` |
 | URL | `https://unsurf-api.coey.dev/mcp` |
 
-Cursor will discover the `scout`, `worker`, and `heal` tools automatically.
+Cursor will discover the available tools automatically.
 
 ## Connecting from a custom MCP client
 
@@ -91,7 +91,7 @@ curl -X POST https://unsurf-api.coey.dev/mcp \
   -d '{"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}'
 ```
 
-The response should list three tools: `scout`, `worker`, and `heal`.
+The response lists the registered tools. The core set is `scout`, `worker`, and `heal`. Depending on server configuration, you may also see `gallery`, `directory`, and `agent-scout`.
 
 ### Call a tool
 
@@ -119,7 +119,7 @@ When you deploy your own unsurf instance, the MCP endpoint is automatically avai
 
 1. Clone the repo and install dependencies:
    ```bash
-   git clone https://github.com/petermillspaugh/unsurf.git
+   git clone https://github.com/acoyfellow/unsurf.git
    cd unsurf && bun install
    ```
 

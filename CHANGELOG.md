@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-02-16
+
 ### Added
 - API Directory with 17+ community-discovered APIs
 - `force` option to skip gallery cache during scout

@@ -35,6 +35,9 @@ These are configured automatically by Alchemy:
 | `STORAGE` | R2 Bucket | `unsurf-storage` | Stores HAR logs, screenshots, traces |
 | `BROWSER` | Browser Rendering | — | Headless browser for scouting |
 | `ANTHROPIC_API_KEY` | Secret | — | Passed through as an encrypted secret binding (only when the env var is set) |
+| `CACHE` | KV Namespace | `unsurf-cache` | Gallery response caching. Optional — gallery works without it but responses are not cached. |
+| `VECTORS` | Vectorize Index | `unsurf-vectors` | Semantic search index for the API directory. Required for `/d/` directory and `/search` routes. |
+| `AI` | Workers AI | — | Generates embeddings for Vectorize. Required alongside `VECTORS` for directory and search. |
 
 ## Database schema
 
@@ -235,6 +238,205 @@ Repair a broken path by retrying, then re-scouting if retries fail.
 |---|---|---|
 | `400` | `{"error": "Missing 'pathId' in request body"}` | Required field missing |
 | `500` | `{"error": "..."}` | Browser, network, or storage failure |
+
+### `GET /api`
+
+Service metadata and directory route map.
+
+**Response** `200`
+```json
+{
+  "name": "unsurf",
+  "version": "0.3.0",
+  "description": "The typed internet — a machine-readable directory of every API",
+  "directory": {
+    "fingerprint": "/d/:domain",
+    "capability": "/d/:domain/:capability",
+    "endpoint": "/d/:domain/:method/:path",
+    "spec": "/d/:domain/spec",
+    "search": "/search?q=:query",
+    "publish": "POST /d/publish"
+  },
+  "tools": ["scout", "worker", "heal"],
+  "mcp": "/mcp",
+  "docs": "https://unsurf.coey.dev"
+}
+```
+
+### `GET /d/`
+
+List all domains in the directory. Requires `VECTORS` + `AI` bindings.
+
+**Query parameters**
+
+| Param | Type | Default | Description |
+|---|---|---|---|
+| `offset` | `integer` | `0` | Pagination offset |
+| `limit` | `integer` | `20` | Max results to return |
+
+**Response** `200`
+```json
+{
+  "fingerprints": [{ "..." : "fingerprint objects" }],
+  "count": 5
+}
+```
+
+### `GET /d/:domain`
+
+Get the fingerprint (summary) for a domain.
+
+**Response** `200` — Fingerprint object for the domain.
+
+**Errors**
+
+| Status | Body | When |
+|---|---|---|
+| `404` | `{"error": "NotFoundError: ..."}` | Domain not in directory |
+| `503` | `{"error": "Directory not configured ..."}` | `VECTORS` / `AI` bindings missing |
+
+### `GET /d/:domain/spec`
+
+Get the full OpenAPI 3.1 spec for a domain.
+
+**Response** `200` — OpenAPI 3.1 JSON document.
+
+### `GET /d/:domain/:capability`
+
+Get the endpoints for a specific capability (e.g. `search`, `auth`, `crud`).
+
+**Response** `200` — Capability slice with matching endpoints.
+
+### `GET /d/:domain/:method/:path`
+
+Get a single endpoint by method and path.
+
+**Response** `200` — Endpoint detail object.
+
+### `POST /d/publish`
+
+Publish a scouted site to the directory. Requires `VECTORS` + `AI` bindings.
+
+**Request body**
+```json
+{
+  "siteId": "site_lx1a_k9m3",
+  "contributor": "alice"
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `siteId` | `string` | ✅ | ID of a previously scouted site |
+| `contributor` | `string` | | Optional contributor name |
+
+**Response** `200` — The published fingerprint object.
+
+**Errors**
+
+| Status | Body | When |
+|---|---|---|
+| `400` | `{"error": "Missing 'siteId' in body"}` | Required field missing |
+| `503` | `{"error": "Directory not configured ..."}` | `VECTORS` / `AI` bindings missing |
+
+### `POST /d/validate`
+
+Validate a domain's endpoints before publishing.
+
+**Request body**
+```json
+{
+  "domain": "example.com",
+  "endpoints": [
+    { "method": "GET", "path": "/api/users" }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `domain` | `string` | ✅ | Domain to validate |
+| `endpoints` | `array` | ✅ | Endpoints to validate (each with `method` and `path`) |
+
+**Response** `200` — Validation result.
+
+**Errors**
+
+| Status | Body | When |
+|---|---|---|
+| `400` | `{"error": "Missing 'domain' or 'endpoints' in body"}` | Required fields missing |
+
+### `DELETE /d/:domain`
+
+Remove a domain from the directory.
+
+**Response** `200`
+```json
+{ "deleted": "example.com" }
+```
+
+### `GET /search`
+
+Semantic search across all directory entries. Requires `VECTORS` + `AI` bindings.
+
+**Query parameters**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `q` | `string` | ✅ | Natural-language search query |
+| `limit` | `integer` | | Max results (default `10`) |
+
+**Response** `200`
+```json
+{
+  "results": [{ "..." : "matching fingerprints" }],
+  "total": 3
+}
+```
+
+**Errors**
+
+| Status | Body | When |
+|---|---|---|
+| `400` | `{"error": "Missing 'q' query parameter"}` | Query missing |
+| `503` | `{"error": "Search not configured ..."}` | `VECTORS` / `AI` bindings missing |
+
+### `GET /gallery`
+
+Search the gallery (legacy). Accepts `q`, `domain`, and `limit` query parameters.
+
+**Response** `200`
+```json
+{
+  "results": [{ "..." : "gallery entries" }],
+  "total": 2
+}
+```
+
+### `GET /gallery/:id/spec`
+
+Get the OpenAPI spec for a gallery entry.
+
+**Response** `200` — OpenAPI JSON document.
+
+### `POST /gallery/publish`
+
+Publish a scouted site to the gallery (legacy).
+
+**Request body**
+```json
+{
+  "siteId": "site_lx1a_k9m3",
+  "contributor": "alice"
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `siteId` | `string` | ✅ | ID of a previously scouted site |
+| `contributor` | `string` | | Optional contributor name |
+
+**Response** `200` — The published gallery entry.
 
 ### `POST /mcp`
 

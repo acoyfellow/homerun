@@ -1,9 +1,18 @@
 ---
 title: MCP Tools
-description: Complete reference for unsurf's scout, worker, and heal tools.
+description: Complete reference for all unsurf MCP tools.
 ---
 
-The three MCP tools — `scout`, `worker`, and `heal` — are available via both the [MCP server](/guides/mcp/) and the [REST API](/reference/config/#rest-api).
+Unsurf registers up to **five** MCP tools. Three are always available; two are conditionally registered based on environment bindings.
+
+| Tool | Availability |
+|---|---|
+| `scout` | Always |
+| `worker` | Always |
+| `heal` | Always |
+| `gallery` | Always |
+| `directory` | Requires `VECTORS` + `AI` bindings |
+| `agent-scout` | Requires `ANTHROPIC_API_KEY` |
 
 ---
 
@@ -17,6 +26,7 @@ Explore a website and capture its API endpoints.
 |---|---|---|---|
 | `url` | `string` | ✅ | Target URL to scout |
 | `task` | `string` | ✅ | Natural language description of what to find |
+| `publish` | `boolean` | | Auto-publish the scouted site to the directory after scouting |
 | `auth` | `object` | | Authentication config |
 | `auth.cookies` | `string` | | Cookie header value |
 | `auth.headers` | `Record<string, string>` | | Additional request headers |
@@ -43,13 +53,14 @@ Explore a website and capture its API endpoints.
 ```json
 {
   "name": "scout",
-  "description": "Explore a website and capture its API endpoints",
+  "description": "Explore a website and capture every API call. Returns captured endpoints with inferred schemas and an OpenAPI spec.",
   "inputSchema": {
     "type": "object",
     "required": ["url", "task"],
     "properties": {
-      "url": { "type": "string", "description": "Target URL to scout" },
-      "task": { "type": "string", "description": "What to find on the site" }
+      "url": { "type": "string", "description": "The URL to scout" },
+      "task": { "type": "string", "description": "What to look for, e.g. 'find all API endpoints'" },
+      "publish": { "type": "boolean", "description": "Auto-publish the scouted site to the directory after scouting" }
     }
   }
 }
@@ -67,6 +78,7 @@ Execute a scouted path or replay a captured API endpoint.
 |---|---|---|---|
 | `pathId` | `string` | ✅ | ID of the path to execute |
 | `data` | `Record<string, unknown>` | | Data to pass to the endpoint |
+| `headers` | `Record<string, string>` | | Custom headers (`Authorization`, `Cookie`, etc.) for authenticated endpoints |
 
 ### Output
 
@@ -89,13 +101,14 @@ Execute a scouted path or replay a captured API endpoint.
 ```json
 {
   "name": "worker",
-  "description": "Execute a scouted path or replay a captured API endpoint",
+  "description": "Replay a scouted API path directly — no browser needed. Pass the pathId from a scout result. Include headers for authenticated endpoints.",
   "inputSchema": {
     "type": "object",
     "required": ["pathId"],
     "properties": {
-      "pathId": { "type": "string", "description": "Path ID from a previous scout" },
-      "data": { "type": "object", "description": "Data to send to the endpoint" }
+      "pathId": { "type": "string", "description": "The path ID from a scout result" },
+      "data": { "type": "object", "description": "Data to pass to the endpoint" },
+      "headers": { "type": "object", "description": "Custom headers (Authorization, Cookie, etc.) for authenticated endpoints" }
     }
   }
 }
@@ -134,13 +147,145 @@ Re-scout and repair a broken path.
 ```json
 {
   "name": "heal",
-  "description": "Re-scout and repair a broken path",
+  "description": "Fix a broken path. Retries with backoff, then re-scouts and patches if needed.",
   "inputSchema": {
     "type": "object",
     "required": ["pathId"],
     "properties": {
-      "pathId": { "type": "string", "description": "ID of the broken path" },
-      "error": { "type": "string", "description": "What went wrong" }
+      "pathId": { "type": "string", "description": "The broken path ID" },
+      "error": { "type": "string", "description": "The error message that caused the break" }
+    }
+  }
+}
+```
+
+---
+
+## gallery
+
+Search the API gallery for previously unsurfed sites. Check here before scouting — someone may have already captured the API you need.
+
+### Input
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `query` | `string` | | Search term (domain, endpoint path, or description) |
+| `domain` | `string` | | Exact domain to look up |
+
+### Output
+
+| Field | Type | Description |
+|---|---|---|
+| `results` | `array` | Matching gallery entries |
+| `total` | `number` | Number of results returned |
+
+### MCP Schema
+
+```json
+{
+  "name": "gallery",
+  "description": "Search the API gallery for previously unsurfed sites. Check here before scouting — someone may have already captured the API you need.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "query": { "type": "string", "description": "Search term (domain, endpoint path, or description)" },
+      "domain": { "type": "string", "description": "Exact domain to look up" }
+    }
+  }
+}
+```
+
+---
+
+## directory
+
+:::note
+Only available when `VECTORS` and `AI` bindings are configured.
+:::
+
+Fingerprint-first API directory. Look up domains, browse capabilities, inspect endpoints, semantic search, or publish scouted sites. Returns token-efficient fingerprints, not full specs.
+
+### Input
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `action` | `"fingerprint" \| "capability" \| "endpoint" \| "search" \| "publish"` | ✅ | The directory action to perform |
+| `domain` | `string` | | Domain to look up (required for `fingerprint`, `capability`, `endpoint`) |
+| `capability` | `string` | | Capability category (required for `capability` action). One of: `auth`, `payments`, `content`, `crud`, `search`, `messaging`, `files`, `analytics`, `social`, `ecommerce`, `forms`, `other` |
+| `method` | `string` | | HTTP method (required for `endpoint` action) |
+| `path` | `string` | | Endpoint path (required for `endpoint` action) |
+| `query` | `string` | | Search query (required for `search` action) |
+| `siteId` | `string` | | Site ID from a scout result (required for `publish` action) |
+
+### Actions
+
+| Action | Required fields | Description | Token cost |
+|---|---|---|---|
+| `fingerprint` | `domain` | Get domain overview | ~50 tokens |
+| `capability` | `domain`, `capability` | List endpoints by capability | ~200 tokens |
+| `endpoint` | `domain`, `method`, `path` | Single endpoint detail | ~80 tokens |
+| `search` | `query` | Semantic search across all APIs | varies |
+| `publish` | `siteId` | Add a scouted site to the directory | varies |
+
+### MCP Schema
+
+```json
+{
+  "name": "directory",
+  "description": "Fingerprint-first API directory. Look up domains, browse capabilities, inspect endpoints, semantic search, or publish scouted sites.",
+  "inputSchema": {
+    "type": "object",
+    "required": ["action"],
+    "properties": {
+      "action": { "type": "string", "enum": ["fingerprint", "capability", "endpoint", "search", "publish"] },
+      "domain": { "type": "string", "description": "Domain to look up" },
+      "capability": { "type": "string", "enum": ["auth", "payments", "content", "crud", "search", "messaging", "files", "analytics", "social", "ecommerce", "forms", "other"] },
+      "method": { "type": "string", "description": "HTTP method" },
+      "path": { "type": "string", "description": "Endpoint path" },
+      "query": { "type": "string", "description": "Search query" },
+      "siteId": { "type": "string", "description": "Site ID from a scout result" }
+    }
+  }
+}
+```
+
+---
+
+## agent-scout
+
+:::note
+Only available when `ANTHROPIC_API_KEY` is configured.
+:::
+
+LLM-guided exploration — an AI agent clicks, types, and navigates to find more API endpoints than a simple page load.
+
+### Input
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `url` | `string` | ✅ | The URL to explore |
+| `task` | `string` | ✅ | What to look for and do on the site |
+
+### Output
+
+| Field | Type | Description |
+|---|---|---|
+| `steps` | `array` | Sequence of actions the agent took |
+| `networkEventsCount` | `number` | Total network events captured |
+| `events` | `array` | Captured network events (`method`, `url`, `status`) |
+
+### MCP Schema
+
+```json
+{
+  "name": "agent-scout",
+  "description": "LLM-guided exploration — an AI agent clicks, types, and navigates to find more API endpoints than a simple page load.",
+  "inputSchema": {
+    "type": "object",
+    "required": ["url", "task"],
+    "properties": {
+      "url": { "type": "string", "description": "The URL to explore" },
+      "task": { "type": "string", "description": "What to look for and do on the site" }
     }
   }
 }

@@ -1,0 +1,155 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import sharp from 'sharp';
+
+// Load self-hosted font files for SVG → PNG rendering
+// Use process.cwd() which is the docs/ directory during build
+const fontsDir = path.resolve(process.cwd(), 'public/fonts');
+const sansFlexRegular = fs.readFileSync(path.join(fontsDir, 'google-sans-flex-400.ttf'));
+const sansFlexBold = fs.readFileSync(path.join(fontsDir, 'google-sans-flex-700.ttf'));
+const codeRegular = fs.readFileSync(path.join(fontsDir, 'google-sans-code-400.ttf'));
+const codeWeight500 = fs.readFileSync(path.join(fontsDir, 'google-sans-code-500.ttf'));
+
+const sansFlexRegularB64 = sansFlexRegular.toString('base64');
+const sansFlexBoldB64 = sansFlexBold.toString('base64');
+const codeRegularB64 = codeRegular.toString('base64');
+const codeWeight500B64 = codeWeight500.toString('base64');
+
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function wrapText(text: string, maxChars: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let current = '';
+
+  for (const word of words) {
+    if (current.length + word.length + 1 > maxChars) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = current ? `${current} ${word}` : word;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+export function buildSvg(title: string, description: string): string {
+  const W = 1200;
+  const H = 630;
+
+  const isIndex = title.toLowerCase() === 'unsurf';
+  const titleLines = wrapText(title, isIndex ? 20 : 32);
+  const descLines = description ? wrapText(description, 58) : [];
+
+  const pad = 64;
+  const titleFontSize = isIndex ? 96 : 52;
+  const titleStartY = isIndex ? 280 : 200;
+  const titleLineHeight = isIndex ? 110 : 62;
+  const descStartY = titleStartY + titleLines.length * titleLineHeight + 28;
+  const descLineHeight = 34;
+
+  const gridDots: string[] = [];
+  for (let x = pad; x < W - pad; x += 40) {
+    for (let y = 40; y < H - 40; y += 40) {
+      gridDots.push(`<circle cx="${x}" cy="${y}" r="0.6" fill="#1a1a1a"/>`);
+    }
+  }
+
+  const titleSvg = titleLines
+    .map(
+      (line, i) =>
+        `<text x="${pad}" y="${titleStartY + i * titleLineHeight}" font-family="'Google Sans Flex', sans-serif" font-size="${titleFontSize}" font-weight="700" fill="${isIndex ? 'url(#titleGrad)' : '#ffffff'}" letter-spacing="${isIndex ? '-4' : '0'}">${escapeXml(line)}</text>`
+    )
+    .join('\n    ');
+
+  const descSvg = descLines
+    .map(
+      (line, i) =>
+        `<text x="${pad}" y="${descStartY + i * descLineHeight}" font-family="'Google Sans Flex', sans-serif" font-size="24" font-weight="400" fill="#888888">${escapeXml(line)}</text>`
+    )
+    .join('\n    ');
+
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @font-face {
+        font-family: 'Google Sans Flex';
+        font-weight: 400;
+        src: url('data:font/truetype;base64,${sansFlexRegularB64}') format('truetype');
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        font-weight: 700;
+        src: url('data:font/truetype;base64,${sansFlexBoldB64}') format('truetype');
+      }
+      @font-face {
+        font-family: 'Google Sans Code';
+        font-weight: 400;
+        src: url('data:font/truetype;base64,${codeRegularB64}') format('truetype');
+      }
+      @font-face {
+        font-family: 'Google Sans Code';
+        font-weight: 600;
+        src: url('data:font/truetype;base64,${codeWeight500B64}') format('truetype');
+      }
+    </style>
+    <clipPath id="rounded">
+      <rect width="${W}" height="${H}" rx="0" ry="0"/>
+    </clipPath>
+  </defs>
+
+  <defs>
+    <radialGradient id="orb" cx="85%" cy="15%" r="45%">
+      <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#4f46e5" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb2" cx="10%" cy="90%" r="40%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="titleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5f5f5"/>
+      <stop offset="45%" stop-color="#22d3ee"/>
+      <stop offset="75%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="${W}" height="${H}" fill="#050505"/>
+  <rect width="${W}" height="${H}" fill="url(#orb)"/>
+  <rect width="${W}" height="${H}" fill="url(#orb2)"/>
+
+  ${gridDots.join('\n  ')}
+
+  ${titleSvg}
+  ${descSvg}
+
+  <line x1="${pad}" y1="${H - 80}" x2="${W - pad}" y2="${H - 80}" stroke="#1a1a1a" stroke-width="1"/>
+  <text x="${pad}" y="${H - 40}" font-family="'Google Sans Code', monospace" font-size="20" font-weight="600" fill="#ffffff">unsurf</text>
+  <text x="${W - pad}" y="${H - 40}" font-family="'Google Sans Code', monospace" font-size="16" font-weight="400" fill="#555555" text-anchor="end">unsurf.coey.dev</text>
+</svg>`;
+}
+
+export async function renderOgImage(title: string, description: string): Promise<Response> {
+  const svg = buildSvg(title, description);
+  const png = await sharp(Buffer.from(svg))
+    .resize(1200, 630)
+    .png()
+    .toBuffer();
+
+  return new Response(png, {
+    headers: {
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    },
+  });
+}

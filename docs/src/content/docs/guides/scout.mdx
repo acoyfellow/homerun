@@ -49,6 +49,20 @@ If the target site requires authentication, pass cookies or headers:
 Auth tokens are stored temporarily in memory during the scout session and are not persisted to D1 or R2.
 </Aside>
 
+## Force a fresh scout
+
+By default, scout results are cached per URL in the gallery. To bypass the cache and run a fresh scout, set `force`:
+
+```json
+{
+  "url": "https://example.com",
+  "task": "find the contact form and map how it submits",
+  "force": true
+}
+```
+
+This is useful when the target site has changed since the last scout, or when you want to capture a different set of endpoints for the same URL.
+
 ## Reading scout results
 
 The response includes:
@@ -57,6 +71,20 @@ The response includes:
 - **`endpointCount`** — total unique endpoints found
 - **`pathId`** — the navigation path taken, replayable by the worker
 - **`openApiSpec`** — complete OpenAPI 3.1 JSON
+
+## Auto-publish to the directory
+
+Set `publish` to automatically add the scouted API to the public directory once the scout completes:
+
+```json
+{
+  "url": "https://example.com",
+  "task": "find the contact form and map how it submits",
+  "publish": true
+}
+```
+
+When `publish` is `true`, the scouted API and its OpenAPI spec are immediately visible in the directory. If omitted or `false`, results are private to your account until you publish manually.
 
 ## Retrieving the OpenAPI spec
 

@@ -10,6 +10,10 @@ The **API Gallery** is a community-contributed registry of unsurfed APIs. Every 
 
 **One line:** _Scout once, share forever._
 
+<Aside type="tip">
+  The gallery has evolved into the **[Directory](/directory)** — a semantic, vector-searchable registry with richer structure (capabilities, fingerprints, per-endpoint lookup). The `/gallery` endpoints still work and are fully supported, but new integrations should prefer the `/d/` and `/search` routes described below.
+</Aside>
+
 ## What is the Gallery
 
 The gallery is both a **read cache** (check before scouting) and a **write-through cache** (populated by scouting). The more people scout, the more the gallery knows.
@@ -121,6 +125,45 @@ A well-prompted agent should:
 1. **Check the gallery first** — if the domain is already there, use the cached spec
 2. **Scout only on cache miss** — saves browser resources
 3. **Publish after scouting** — grows the gallery for everyone
+
+## The Directory — next-generation registry
+
+The **Directory** (`/d/`) builds on the gallery with richer structure and semantic search:
+
+| Feature | Gallery (`/gallery`) | Directory (`/d/`) |
+|---|---|---|
+| Search | Keyword match | Vector / semantic search |
+| Lookup | By domain or ID | By domain, capability, or individual endpoint |
+| Structure | Flat entry | Fingerprint → capabilities → endpoints |
+| Spec | Full spec only | Full spec _or_ per-endpoint slice |
+
+Directory routes:
+
+```bash
+# Semantic search across all registered APIs
+curl "https://unsurf-api.coey.dev/search?q=payment+processing"
+
+# Domain fingerprint (summary of all capabilities)
+curl "https://unsurf-api.coey.dev/d/api.stripe.com"
+
+# Capability slice (e.g. just the payments endpoints)
+curl "https://unsurf-api.coey.dev/d/api.stripe.com/payments"
+
+# Single endpoint detail
+curl "https://unsurf-api.coey.dev/d/api.stripe.com/GET/v1/charges"
+
+# Full OpenAPI spec
+curl "https://unsurf-api.coey.dev/d/api.stripe.com/spec"
+
+# Publish to directory
+curl -X POST "https://unsurf-api.coey.dev/d/publish" \
+  -H "Content-Type: application/json" \
+  -d '{"siteId": "site_abc123", "contributor": "your-name"}'
+```
+
+When both VECTORS and AI bindings are configured, scouting with `publish: true` writes to **both** the gallery and the directory automatically.
+
+See the [API Directory](/directory) to browse all registered APIs, or the [config reference](/reference/config/#rest-api) for the full endpoint list.
 
 ## Full example
 
