@@ -1,5 +1,5 @@
 import type { RPCSchema } from "electrobun/bun";
-import type { CapturedExchange, ProxyStatus, Session } from "../../shared/types";
+import type { CapturedExchange, ProxyStatus, Session, TunnelStatus } from "../../shared/types";
 
 export interface HomerunRPC {
 	bun: RPCSchema<{
@@ -11,6 +11,9 @@ export interface HomerunRPC {
 			getSession: { params: { id: string }; response: Session | null };
 			startCapture: { params: { domain?: string }; response: boolean };
 			stopCapture: { params: Record<string, never>; response: number };
+			getTunnelStatus: { params: Record<string, never>; response: TunnelStatus };
+			startTunnel: { params: { apiKey: string; tunnelId?: string; upstream?: string; relayUrl?: string }; response: TunnelStatus };
+			stopTunnel: { params: Record<string, never>; response: boolean };
 		};
 		messages: {
 			logToBun: { msg: string };
@@ -22,6 +25,7 @@ export interface HomerunRPC {
 			proxyStatusChanged: ProxyStatus;
 			trafficEntry: CapturedExchange;
 			sessionUpdated: Session;
+			tunnelStatusChanged: TunnelStatus;
 		};
 	}>;
 }

@@ -62,3 +62,5 @@ export interface FormSequence {
 	actions: FormAction[];
 	createdAt: number;
 }
+
+export { type TunnelStatus, type TunnelState, type TunnelConfig } from "./tunnel/types.js";

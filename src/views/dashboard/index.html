@@ -18,6 +18,25 @@
 				<span id="port-display">Port: 8080</span>
 				<span id="request-count">Requests: 0</span>
 			</section>
+			<section id="tunnel">
+				<h2>Reverse Tunnel</h2>
+				<div id="tunnel-controls">
+					<input type="text" id="tunnel-apikey" placeholder="API Key" autocomplete="off" />
+					<input type="text" id="tunnel-upstream" placeholder="Upstream URL (optional, e.g. http://localhost:3000)" autocomplete="off" />
+					<button type="button" id="toggle-tunnel">Start Tunnel</button>
+				</div>
+				<div id="tunnel-info" class="hidden">
+					<div id="tunnel-status-line">
+						<span id="tunnel-state-dot"></span>
+						<span id="tunnel-state-text">Disconnected</span>
+					</div>
+					<div id="tunnel-url-line">
+						<code id="tunnel-url"></code>
+						<button type="button" id="copy-tunnel-url">Copy</button>
+					</div>
+					<span id="tunnel-requests">Proxied: 0</span>
+				</div>
+			</section>
 			<section id="traffic-list">
 				<h2>Recent Traffic</h2>
 				<div id="entries"></div>

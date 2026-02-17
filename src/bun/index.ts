@@ -1,15 +1,28 @@
 import { BrowserView, BrowserWindow, Tray, Utils } from "electrobun/bun";
 import { PROXY_PORT } from "../shared/constants";
+import type { TunnelConfig, TunnelStatus } from "../shared/types";
 import { createRecorder } from "./capture/recorder";
+import { TunnelClient } from "./tunnel/client";
 import { createInterceptor } from "./proxy/interceptor";
 import { type ProxyServer, createProxyServer } from "./proxy/server";
 import type { HomerunRPC } from "./types/rpc";
 
 let proxyServer: ProxyServer | null = null;
+let tunnelClient: TunnelClient | null = null;
 const { interceptor, addHook } = createInterceptor();
 const recorder = createRecorder();
 
 addHook(recorder.interceptor);
+
+const disconnectedTunnelStatus: TunnelStatus = {
+	state: "disconnected",
+	tunnelId: null,
+	tunnelUrl: null,
+	relayUrl: "",
+	connectedAt: null,
+	requestsProxied: 0,
+	upstream: null,
+};
 
 const rpc = BrowserView.defineRPC<HomerunRPC>({
 	maxRequestTime: 10_000,
@@ -55,6 +68,32 @@ const rpc = BrowserView.defineRPC<HomerunRPC>({
 			stopCapture: () => {
 				return recorder.entries.length;
 			},
+			getTunnelStatus: () => {
+				return tunnelClient?.status ?? disconnectedTunnelStatus;
+			},
+			startTunnel: ({ apiKey, tunnelId, upstream, relayUrl }) => {
+				if (tunnelClient) {
+					return tunnelClient.status;
+				}
+				tunnelClient = new TunnelClient({
+					apiKey,
+					tunnelId,
+					upstream,
+					relayUrl,
+				} as TunnelConfig);
+				tunnelClient.onStateChange(() => {
+					updateTrayMenu();
+				});
+				tunnelClient.connect();
+				return tunnelClient.status;
+			},
+			stopTunnel: () => {
+				if (!tunnelClient) return false;
+				tunnelClient.disconnect();
+				tunnelClient = null;
+				console.log("[homerun] Tunnel stopped");
+				return true;
+			},
 		},
 		messages: {
 			logToBun: ({ msg }) => {
@@ -79,6 +118,8 @@ const tray = new Tray({
 
 function updateTrayMenu() {
 	const isRunning = proxyServer !== null;
+	const tunnelState = tunnelClient?.status.state ?? "disconnected";
+	const tunnelLabel = tunnelState === "connected" ? `Tunnel: ${tunnelClient?.status.tunnelId}` : `Tunnel: ${tunnelState}`;
 	tray.setMenu([
 		{
 			type: "normal",
@@ -86,11 +127,22 @@ function updateTrayMenu() {
 			action: "status",
 			enabled: false,
 		},
-		{ type: "divider" },
 		{
 			type: "normal",
 			label: isRunning ? "Stop Proxy" : "Start Proxy",
 			action: "toggle-proxy",
+		},
+		{ type: "divider" },
+		{
+			type: "normal",
+			label: tunnelLabel,
+			action: "tunnel-status",
+			enabled: false,
+		},
+		{
+			type: "normal",
+			label: tunnelState === "connected" ? "Stop Tunnel" : "Start Tunnel",
+			action: "toggle-tunnel",
 		},
 		{ type: "divider" },
 		{
@@ -125,6 +177,16 @@ tray.on("tray-item-clicked" as any, (e: any) => {
 			updateTrayMenu();
 			break;
 		}
+		case "toggle-tunnel": {
+			if (tunnelClient) {
+				tunnelClient.disconnect();
+				tunnelClient = null;
+			} else {
+				mainWindow.focus();
+			}
+			updateTrayMenu();
+			break;
+		}
 		case "show-dashboard": {
 			mainWindow.focus();
 			break;
@@ -132,6 +194,9 @@ tray.on("tray-item-clicked" as any, (e: any) => {
 		case "quit": {
 			if (proxyServer) {
 				proxyServer.stop();
+			}
+			if (tunnelClient) {
+				tunnelClient.disconnect();
 			}
 			Utils.quit();
 			break;
