@@ -30,3 +30,11 @@ export class ValidationError extends Schema.TaggedError<ValidationError>()("Vali
 	field: Schema.String,
 	message: Schema.String,
 }) {}
+
+export class BlockedDomainError extends Schema.TaggedError<BlockedDomainError>()(
+	"BlockedDomainError",
+	{
+		domain: Schema.String,
+		message: Schema.String,
+	},
+) {}

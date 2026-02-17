@@ -108,6 +108,11 @@ export function makeCfBrowser(
 			catch: (e) => new BrowserErr({ message: `New page failed: ${e}` }),
 		});
 
+		yield* Effect.tryPromise({
+			try: () => page.setUserAgent("unsurf/0.2.0 (API discovery tool; https://unsurf.coey.dev)"),
+			catch: (e) => new BrowserErr({ message: `Set user-agent failed: ${e}` }),
+		});
+
 		// Collected events buffer
 		const eventsRef = yield* Ref.make<NetworkEvent[]>([]);
 

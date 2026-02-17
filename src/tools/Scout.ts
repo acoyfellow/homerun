@@ -1,7 +1,6 @@
 import { Effect, Option } from "effect";
 import { CapturedEndpoint } from "../domain/Endpoint.js";
-import type { BrowserError, StoreError } from "../domain/Errors.js";
-import { ValidationError } from "../domain/Errors.js";
+import type { BlockedDomainError, BrowserError, StoreError } from "../domain/Errors.js";
 import type { NetworkEvent } from "../domain/NetworkEvent.js";
 import { isApiRequest } from "../domain/NetworkEvent.js";
 import { PathStep, ScoutedPath } from "../domain/Path.js";
@@ -47,6 +46,28 @@ function nowISO(): string {
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
 
 const VALID_METHODS = new Set<string>(["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]);
+
+const BLOCKED_DOMAINS = [
+	"wikipedia.org",
+	"wikimedia.org",
+	"wiktionary.org",
+	"wikiquote.org",
+	"wikibooks.org",
+	"wikisource.org",
+	"wikinews.org",
+	"wikiversity.org",
+	"wikivoyage.org",
+	"mediawiki.org",
+];
+
+function isBlockedDomain(url: string): boolean {
+	try {
+		const hostname = new URL(url).hostname.toLowerCase();
+		return BLOCKED_DOMAINS.some((domain) => hostname.includes(domain));
+	} catch {
+		return false;
+	}
+}
 
 function isValidMethod(m: string): m is HttpMethod {
 	return VALID_METHODS.has(m.toUpperCase());
@@ -194,7 +215,7 @@ export const scout = (
 	input: ScoutInput,
 ): Effect.Effect<
 	ScoutResult,
-	BrowserError | StoreError,
+	BlockedDomainError | BrowserError | StoreError,
 	Browser | Store | SchemaInferrer | OpenApiGenerator
 > =>
 	Effect.gen(function* () {
@@ -203,6 +224,19 @@ export const scout = (
 
 		const now = nowISO();
 		const domain = extractDomain(input.url);
+
+		if (isBlockedDomain(input.url)) {
+			const { BlockedDomainError: BlockedErr } = yield* Effect.promise(
+				() => import("../domain/Errors.js"),
+			);
+			return yield* Effect.fail(
+				new BlockedErr({
+					domain,
+					message:
+						"This site does not permit automated access. Please respect their robots.txt and terms of service.",
+				}),
+			);
+		}
 
 		// Check gallery for cached spec (optional — skip if Gallery isn't in layer or force=true)
 		const galleryResult = input.force
