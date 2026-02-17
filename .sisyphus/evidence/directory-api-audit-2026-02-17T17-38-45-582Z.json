@@ -1,0 +1,116 @@
+{
+  "timestamp": "2026-02-17T17:38:45.595Z",
+  "url": "https://unsurf-api.coey.dev",
+  "summary": {
+    "total": 16,
+    "working": 1,
+    "blocked": 1,
+    "broken": 0,
+    "timeout": 0,
+    "error": 14,
+    "healthRate": 6
+  },
+  "results": [
+    {
+      "domain": "jsonplaceholder.typicode.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 441,
+      "endpointTested": "/posts",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "catfact.ninja",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 551
+    },
+    {
+      "domain": "swapi.dev",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 960
+    },
+    {
+      "domain": "api.nasa.gov",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 1308
+    },
+    {
+      "domain": "api.coingecko.com",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 394
+    },
+    {
+      "domain": "rickandmortyapi.com",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 484
+    },
+    {
+      "domain": "api.spacexdata.com",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 732
+    },
+    {
+      "domain": "icanhazdadjoke.com",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 505
+    },
+    {
+      "domain": "restcountries.com",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 491
+    },
+    {
+      "domain": "api.chucknorris.io",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 1018
+    },
+    {
+      "domain": "pokeapi.co",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 468
+    },
+    {
+      "domain": "www.thecocktaildb.com",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 755
+    },
+    {
+      "domain": "dog.ceo",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 735
+    },
+    {
+      "domain": "www.themealdb.com",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 727
+    },
+    {
+      "domain": "hacker-news.firebaseio.com",
+      "status": "BLOCKED",
+      "httpStatus": 200,
+      "error": "API blocks automated requests",
+      "responseTimeMs": 1238,
+      "endpointTested": "/v0/topstories",
+      "responsePreview": "<!doctype html><html lang=\"en-US\" dir=\"ltr\"><head><base href=\"https://accounts.google.com/v3/signin/\"><link rel=\"preconnect\" href=\"//www.gstatic.com\"><meta name=\"referrer\" content=\"origin\"><style data"
+    },
+    {
+      "domain": "api.open-meteo.com",
+      "status": "ERROR",
+      "error": "invokeData.body?.includes is not a function. (In 'invokeData.body?.includes(\"robot\")', 'invokeData.body?.includes' is undefined)",
+      "responseTimeMs": 880
+    }
+  ]
+}

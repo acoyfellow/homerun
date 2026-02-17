@@ -1,0 +1,36 @@
+{
+  "kind": "cloudflare::R2Bucket",
+  "id": "unsurf-storage",
+  "fqn": "unsurf/production/unsurf-storage",
+  "seq": 1,
+  "data": {},
+  "status": "updated",
+  "output": {
+    "Symbol(alchemy::ResourceKind)": "cloudflare::R2Bucket",
+    "Symbol(alchemy::ResourceID)": "unsurf-storage",
+    "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-storage",
+    "Symbol(alchemy::ResourceScope)": {
+      "@scope": null
+    },
+    "Symbol(alchemy::ResourceSeq)": 1,
+    "name": "unsurf-unsurf-storage-production",
+    "location": "WNAM",
+    "creationDate": {
+      "@date": "2026-02-09T15:13:38.201Z"
+    },
+    "jurisdiction": "default",
+    "type": "r2_bucket",
+    "accountId": "bfcb6ac5b3ceaf42a09607f6f7925823",
+    "dev": {
+      "id": "unsurf-unsurf-storage-production",
+      "remote": false,
+      "isDeployed": true
+    }
+  },
+  "props": {
+    "adopt": true,
+    "dev": {
+      "force": false
+    }
+  }
+}

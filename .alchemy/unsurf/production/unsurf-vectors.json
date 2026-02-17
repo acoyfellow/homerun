@@ -1,0 +1,29 @@
+{
+  "kind": "cloudflare::VectorizeIndex",
+  "id": "unsurf-vectors",
+  "fqn": "unsurf/production/unsurf-vectors",
+  "seq": 3,
+  "data": {},
+  "status": "created",
+  "output": {
+    "Symbol(alchemy::ResourceKind)": "cloudflare::VectorizeIndex",
+    "Symbol(alchemy::ResourceID)": "unsurf-vectors",
+    "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-vectors",
+    "Symbol(alchemy::ResourceScope)": {
+      "@scope": null
+    },
+    "Symbol(alchemy::ResourceSeq)": 3,
+    "type": "vectorize",
+    "id": "unsurf-unsurf-vectors-production",
+    "name": "unsurf-unsurf-vectors-production",
+    "dimensions": 768,
+    "metric": "cosine",
+    "accountId": "bfcb6ac5b3ceaf42a09607f6f7925823",
+    "createdAt": 1771241557009
+  },
+  "props": {
+    "dimensions": 768,
+    "metric": "cosine",
+    "adopt": true
+  }
+}

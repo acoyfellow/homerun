@@ -1,0 +1,32 @@
+{
+  "kind": "cloudflare::KVNamespace",
+  "id": "unsurf-gallery-cache",
+  "fqn": "unsurf/production/unsurf-gallery-cache",
+  "seq": 2,
+  "data": {},
+  "status": "updated",
+  "output": {
+    "Symbol(alchemy::ResourceKind)": "cloudflare::KVNamespace",
+    "Symbol(alchemy::ResourceID)": "unsurf-gallery-cache",
+    "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-gallery-cache",
+    "Symbol(alchemy::ResourceScope)": {
+      "@scope": null
+    },
+    "Symbol(alchemy::ResourceSeq)": 2,
+    "type": "kv_namespace",
+    "namespaceId": "5de6bcf3165d405bbe3ae9d9a7d240ef",
+    "title": "unsurf-unsurf-gallery-cache-production",
+    "dev": {
+      "id": "unsurf-gallery-cache",
+      "remote": false
+    },
+    "createdAt": 1771270551043,
+    "modifiedAt": 1771351207747
+  },
+  "props": {
+    "adopt": true,
+    "dev": {
+      "force": false
+    }
+  }
+}

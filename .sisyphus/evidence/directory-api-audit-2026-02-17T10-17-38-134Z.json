@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-02-17T10:17:38.137Z",
+  "url": "https://unsurf-api.coey.dev",
+  "summary": {
+    "total": 17,
+    "working": 0,
+    "blocked": 0,
+    "broken": 0,
+    "timeout": 0,
+    "error": 17,
+    "healthRate": 0
+  },
+  "results": [
+    {
+      "domain": "en.wikipedia.org",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 128
+    },
+    {
+      "domain": "jsonplaceholder.typicode.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 121
+    },
+    {
+      "domain": "catfact.ninja",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 124
+    },
+    {
+      "domain": "swapi.dev",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 113
+    },
+    {
+      "domain": "api.nasa.gov",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 109
+    },
+    {
+      "domain": "api.coingecko.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 121
+    },
+    {
+      "domain": "rickandmortyapi.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 113
+    },
+    {
+      "domain": "api.spacexdata.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 109
+    },
+    {
+      "domain": "icanhazdadjoke.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 127
+    },
+    {
+      "domain": "restcountries.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 119
+    },
+    {
+      "domain": "api.chucknorris.io",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 110
+    },
+    {
+      "domain": "pokeapi.co",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 118
+    },
+    {
+      "domain": "www.thecocktaildb.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 118
+    },
+    {
+      "domain": "dog.ceo",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 118
+    },
+    {
+      "domain": "www.themealdb.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 118
+    },
+    {
+      "domain": "hacker-news.firebaseio.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 117
+    },
+    {
+      "domain": "api.open-meteo.com",
+      "status": "ERROR",
+      "error": "No GET endpoint found in fingerprint",
+      "responseTimeMs": 116
+    }
+  ]
+}

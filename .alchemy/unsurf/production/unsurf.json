@@ -1,0 +1,231 @@
+{
+  "kind": "cloudflare::Worker",
+  "id": "unsurf",
+  "fqn": "unsurf/production/unsurf",
+  "seq": 4,
+  "data": {},
+  "status": "updated",
+  "output": {
+    "Symbol(alchemy::ResourceKind)": "cloudflare::Worker",
+    "Symbol(alchemy::ResourceID)": "unsurf",
+    "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf",
+    "Symbol(alchemy::ResourceScope)": {
+      "@scope": null
+    },
+    "Symbol(alchemy::ResourceSeq)": 4,
+    "name": "unsurf",
+    "entrypoint": "./src/cf-worker.ts",
+    "bindings": {
+      "DB": {
+        "Symbol(alchemy::ResourceKind)": "cloudflare::D1Database",
+        "Symbol(alchemy::ResourceID)": "unsurf-db",
+        "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-db",
+        "Symbol(alchemy::ResourceScope)": {
+          "@scope": null
+        },
+        "Symbol(alchemy::ResourceSeq)": 0,
+        "type": "d1",
+        "id": "d368fc2c-3bd0-4278-b6f2-3fa2d661899f",
+        "name": "unsurf-unsurf-db-production",
+        "dev": {
+          "id": "unsurf-unsurf-db-production",
+          "remote": false
+        },
+        "migrationsDir": "./migrations",
+        "migrationsTable": "d1_migrations",
+        "jurisdiction": "default"
+      },
+      "STORAGE": {
+        "Symbol(alchemy::ResourceKind)": "cloudflare::R2Bucket",
+        "Symbol(alchemy::ResourceID)": "unsurf-storage",
+        "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-storage",
+        "Symbol(alchemy::ResourceScope)": {
+          "@scope": null
+        },
+        "Symbol(alchemy::ResourceSeq)": 1,
+        "name": "unsurf-unsurf-storage-production",
+        "location": "WNAM",
+        "creationDate": {
+          "@date": "2026-02-09T15:13:38.201Z"
+        },
+        "jurisdiction": "default",
+        "type": "r2_bucket",
+        "accountId": "bfcb6ac5b3ceaf42a09607f6f7925823",
+        "dev": {
+          "id": "unsurf-unsurf-storage-production",
+          "remote": false,
+          "isDeployed": true
+        }
+      },
+      "BROWSER": {
+        "type": "browser"
+      },
+      "CACHE": {
+        "Symbol(alchemy::ResourceKind)": "cloudflare::KVNamespace",
+        "Symbol(alchemy::ResourceID)": "unsurf-gallery-cache",
+        "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-gallery-cache",
+        "Symbol(alchemy::ResourceScope)": {
+          "@scope": null
+        },
+        "Symbol(alchemy::ResourceSeq)": 2,
+        "type": "kv_namespace",
+        "namespaceId": "5de6bcf3165d405bbe3ae9d9a7d240ef",
+        "title": "unsurf-unsurf-gallery-cache-production",
+        "dev": {
+          "id": "unsurf-gallery-cache",
+          "remote": false
+        },
+        "createdAt": 1771270551043,
+        "modifiedAt": 1771351207747
+      },
+      "VECTORS": {
+        "Symbol(alchemy::ResourceKind)": "cloudflare::VectorizeIndex",
+        "Symbol(alchemy::ResourceID)": "unsurf-vectors",
+        "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-vectors",
+        "Symbol(alchemy::ResourceScope)": {
+          "@scope": null
+        },
+        "Symbol(alchemy::ResourceSeq)": 3,
+        "type": "vectorize",
+        "id": "unsurf-unsurf-vectors-production",
+        "name": "unsurf-unsurf-vectors-production",
+        "dimensions": 768,
+        "metric": "cosine",
+        "accountId": "bfcb6ac5b3ceaf42a09607f6f7925823",
+        "createdAt": 1771241557009
+      },
+      "AI": {
+        "type": "ai"
+      },
+      "ANTHROPIC_API_KEY": {
+        "@secret": {
+          "version": "v1",
+          "ciphertext": "QQDnDSr5yybFHrF2ByEcdf7SMmg5LMWSz4JTMUfoMaMV38XXMyxykk2t8brbxERZjxZuPZVTZHT4Pz1GS2bo18hrysV3B/iRMA==",
+          "iv": "ejbbSrsAumFVNLxg",
+          "salt": "AkVj6WXFNbwPqR3Rgl2jaQ==",
+          "tag": "IzyLx/sNs0u8ZOF9GsZctg=="
+        }
+      }
+    },
+    "compatibility": "node",
+    "url": "https://unsurf.coy.workers.dev",
+    "adopt": true,
+    "type": "service",
+    "id": "unsurf",
+    "cwd": "",
+    "compatibilityDate": "2026-02-05",
+    "compatibilityFlags": [
+      "nodejs_compat",
+      "nodejs_compat_populate_process_env"
+    ],
+    "format": "esm",
+    "createdAt": {
+      "@date": "2026-02-16T19:36:41.180Z"
+    },
+    "updatedAt": {
+      "@date": "2026-02-17T18:00:34.260Z"
+    },
+    "dev": {
+      "hasRemote": true
+    }
+  },
+  "props": {
+    "name": "unsurf",
+    "entrypoint": "./src/cf-worker.ts",
+    "bindings": {
+      "DB": {
+        "Symbol(alchemy::ResourceKind)": "cloudflare::D1Database",
+        "Symbol(alchemy::ResourceID)": "unsurf-db",
+        "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-db",
+        "Symbol(alchemy::ResourceScope)": {
+          "@scope": null
+        },
+        "Symbol(alchemy::ResourceSeq)": 0,
+        "type": "d1",
+        "id": "d368fc2c-3bd0-4278-b6f2-3fa2d661899f",
+        "name": "unsurf-unsurf-db-production",
+        "dev": {
+          "id": "unsurf-unsurf-db-production",
+          "remote": false
+        },
+        "migrationsDir": "./migrations",
+        "migrationsTable": "d1_migrations",
+        "jurisdiction": "default"
+      },
+      "STORAGE": {
+        "Symbol(alchemy::ResourceKind)": "cloudflare::R2Bucket",
+        "Symbol(alchemy::ResourceID)": "unsurf-storage",
+        "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-storage",
+        "Symbol(alchemy::ResourceScope)": {
+          "@scope": null
+        },
+        "Symbol(alchemy::ResourceSeq)": 1,
+        "name": "unsurf-unsurf-storage-production",
+        "location": "WNAM",
+        "creationDate": {
+          "@date": "2026-02-09T15:13:38.201Z"
+        },
+        "jurisdiction": "default",
+        "type": "r2_bucket",
+        "accountId": "bfcb6ac5b3ceaf42a09607f6f7925823",
+        "dev": {
+          "id": "unsurf-unsurf-storage-production",
+          "remote": false,
+          "isDeployed": true
+        }
+      },
+      "BROWSER": {
+        "type": "browser"
+      },
+      "CACHE": {
+        "Symbol(alchemy::ResourceKind)": "cloudflare::KVNamespace",
+        "Symbol(alchemy::ResourceID)": "unsurf-gallery-cache",
+        "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-gallery-cache",
+        "Symbol(alchemy::ResourceScope)": {
+          "@scope": null
+        },
+        "Symbol(alchemy::ResourceSeq)": 2,
+        "type": "kv_namespace",
+        "namespaceId": "5de6bcf3165d405bbe3ae9d9a7d240ef",
+        "title": "unsurf-unsurf-gallery-cache-production",
+        "dev": {
+          "id": "unsurf-gallery-cache",
+          "remote": false
+        },
+        "createdAt": 1771270551043,
+        "modifiedAt": 1771351207747
+      },
+      "VECTORS": {
+        "Symbol(alchemy::ResourceKind)": "cloudflare::VectorizeIndex",
+        "Symbol(alchemy::ResourceID)": "unsurf-vectors",
+        "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-vectors",
+        "Symbol(alchemy::ResourceScope)": {
+          "@scope": null
+        },
+        "Symbol(alchemy::ResourceSeq)": 3,
+        "type": "vectorize",
+        "id": "unsurf-unsurf-vectors-production",
+        "name": "unsurf-unsurf-vectors-production",
+        "dimensions": 768,
+        "metric": "cosine",
+        "accountId": "bfcb6ac5b3ceaf42a09607f6f7925823",
+        "createdAt": 1771241557009
+      },
+      "AI": {
+        "type": "ai"
+      },
+      "ANTHROPIC_API_KEY": {
+        "@secret": {
+          "version": "v1",
+          "ciphertext": "txHrwjH8mw3WRHjDGm5ubMQc4Wselj1rjHtj3q4WvfGsm7zh+1Gg6ZYPFDtqtzKcdzUN64f8HSjHHbq/TxnwME2Kmujnypu6JA==",
+          "iv": "OYqG6vWTCEPSO08R",
+          "salt": "l7fzySQx6R3cmi73LTH4Jg==",
+          "tag": "NABXMV5vTr1qe85k2KDVXw=="
+        }
+      }
+    },
+    "compatibility": "node",
+    "url": true,
+    "adopt": true
+  }
+}

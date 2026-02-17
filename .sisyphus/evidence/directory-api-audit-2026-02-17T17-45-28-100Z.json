@@ -1,0 +1,184 @@
+{
+  "timestamp": "2026-02-17T17:45:28.100Z",
+  "url": "https://unsurf-api.coey.dev",
+  "summary": {
+    "total": 21,
+    "working": 20,
+    "blocked": 1,
+    "broken": 0,
+    "timeout": 0,
+    "error": 0,
+    "healthRate": 95
+  },
+  "results": [
+    {
+      "domain": "api.zippopotam.us",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 579,
+      "endpointTested": "/us/{id}",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "api.npms.io",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 755,
+      "endpointTested": "/",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "httpbin.org",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 480,
+      "endpointTested": "https://httpbin.org/",
+      "responsePreview": "error code: 1016"
+    },
+    {
+      "domain": "api.frankfurter.app",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 479,
+      "endpointTested": "/",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "ipinfo.io",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 587,
+      "endpointTested": "/",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "dummyjson.com",
+      "status": "BLOCKED",
+      "httpStatus": 200,
+      "error": "API blocks automated requests",
+      "responseTimeMs": 493,
+      "endpointTested": "/",
+      "responsePreview": "<!DOCTYPE html>\r\n<html lang=\"en\">\r\n\r\n<head>\r\n  <meta charset=\"UTF-8\" />\r\n  <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\r\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1"
+    },
+    {
+      "domain": "jsonplaceholder.typicode.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 428,
+      "endpointTested": "/posts",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "catfact.ninja",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 570,
+      "endpointTested": "/fact",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "swapi.dev",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 984,
+      "endpointTested": "/api/people",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "api.nasa.gov",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 1114,
+      "endpointTested": "/planetary/apod",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "api.coingecko.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 485,
+      "endpointTested": "/api/v3/coins/list",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "rickandmortyapi.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 421,
+      "endpointTested": "/api/character",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "api.spacexdata.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 453,
+      "endpointTested": "/v5/launches/latest",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "icanhazdadjoke.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 495,
+      "endpointTested": "/",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "restcountries.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 571,
+      "endpointTested": "/v3.1/all",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "api.chucknorris.io",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 794,
+      "endpointTested": "/jokes/random",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "pokeapi.co",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 425,
+      "endpointTested": "/api/v2/pokemon",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "www.thecocktaildb.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 610,
+      "endpointTested": "/api/json/v1/{id}/random.php",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "dog.ceo",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 479,
+      "endpointTested": "/api/breeds/list/all",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "www.themealdb.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 628,
+      "endpointTested": "/api/json/v1/{id}/random.php",
+      "responsePreview": "JSON response"
+    },
+    {
+      "domain": "api.open-meteo.com",
+      "status": "WORKING",
+      "httpStatus": 200,
+      "responseTimeMs": 822,
+      "endpointTested": "/v1/forecast",
+      "responsePreview": "JSON response"
+    }
+  ]
+}

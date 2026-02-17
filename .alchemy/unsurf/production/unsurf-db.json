@@ -1,0 +1,49 @@
+{
+  "kind": "cloudflare::D1Database",
+  "id": "unsurf-db",
+  "fqn": "unsurf/production/unsurf-db",
+  "seq": 0,
+  "data": {},
+  "status": "updated",
+  "output": {
+    "Symbol(alchemy::ResourceKind)": "cloudflare::D1Database",
+    "Symbol(alchemy::ResourceID)": "unsurf-db",
+    "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-db",
+    "Symbol(alchemy::ResourceScope)": {
+      "@scope": null
+    },
+    "Symbol(alchemy::ResourceSeq)": 0,
+    "type": "d1",
+    "id": "d368fc2c-3bd0-4278-b6f2-3fa2d661899f",
+    "name": "unsurf-unsurf-db-production",
+    "dev": {
+      "id": "unsurf-unsurf-db-production",
+      "remote": false
+    },
+    "migrationsDir": "./migrations",
+    "migrationsTable": "d1_migrations",
+    "jurisdiction": "default"
+  },
+  "props": {
+    "migrationsDir": "./migrations",
+    "adopt": true,
+    "migrationsFiles": [
+      {
+        "id": "0000_good_the_call.sql",
+        "hash": "7cc976238f52f8cd3d3f1eaf0efddcd6d15bf1ec267e37b51db90ae2245ebbb5"
+      },
+      {
+        "id": "0001_milky_polaris.sql",
+        "hash": "cb0c38e9820387f819c07b0f7f09c6b5517913f84ceacef68c520e4d6770577b"
+      },
+      {
+        "id": "0002_complete_inhumans.sql",
+        "hash": "2ffd1f3cdf35f7967816dda3336d021b11759749a1d01537e1ee7d2719302540"
+      }
+    ],
+    "importFiles": [],
+    "dev": {
+      "force": false
+    }
+  }
+}

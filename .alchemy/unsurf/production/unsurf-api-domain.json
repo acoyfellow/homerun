@@ -1,0 +1,30 @@
+{
+  "kind": "cloudflare::CustomDomain",
+  "id": "unsurf-api-domain",
+  "fqn": "unsurf/production/unsurf-api-domain",
+  "seq": 5,
+  "data": {},
+  "status": "created",
+  "output": {
+    "Symbol(alchemy::ResourceKind)": "cloudflare::CustomDomain",
+    "Symbol(alchemy::ResourceID)": "unsurf-api-domain",
+    "Symbol(alchemy::ResourceFQN)": "unsurf/production/unsurf-api-domain",
+    "Symbol(alchemy::ResourceScope)": {
+      "@scope": null
+    },
+    "Symbol(alchemy::ResourceSeq)": 5,
+    "name": "unsurf-api.coey.dev",
+    "workerName": "unsurf",
+    "adopt": true,
+    "zoneId": "1563da24f904f018b89fdcb2147c558b",
+    "id": "faaef060513b11e85d60f943089d9f9ed5132543",
+    "environment": "production",
+    "createdAt": 1771270602599,
+    "updatedAt": 1771270602599
+  },
+  "props": {
+    "name": "unsurf-api.coey.dev",
+    "workerName": "unsurf",
+    "adopt": true
+  }
+}
