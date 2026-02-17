@@ -4372,12 +4372,12 @@ function createProxyServer(options = {}) {
   });
   return {
     get port() {
-      return server.port;
+      return server.port ?? port;
     },
     get status() {
       return {
         running: true,
-        port: server.port,
+        port: server.port ?? port,
         requestCount,
         activeConnections,
         uptime: Date.now() - startTime
