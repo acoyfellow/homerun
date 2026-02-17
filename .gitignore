@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.electrobun/
+*.db
+*.db-journal
+*.db-wal
+.DS_Store
+*.pem
+*.key
+*.crt
+.env
+.env.local

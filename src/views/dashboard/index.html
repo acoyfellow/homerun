@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>homerun</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div id="app">
+		<header>
+			<h1>homerun</h1>
+			<div id="proxy-status" class="status-badge stopped">Stopped</div>
+		</header>
+		<main>
+			<section id="controls">
+				<button type="button" id="toggle-proxy">Start Proxy</button>
+				<span id="port-display">Port: 8080</span>
+				<span id="request-count">Requests: 0</span>
+			</section>
+			<section id="traffic-list">
+				<h2>Recent Traffic</h2>
+				<div id="entries"></div>
+			</section>
+		</main>
+	</div>
+	<script type="module" src="index.ts"></script>
+</body>
+</html>
