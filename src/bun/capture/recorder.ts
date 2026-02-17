@@ -1,7 +1,7 @@
 import type { CapturedExchange, ProxyRequest } from "../../shared/types";
 import type { Interceptor } from "../proxy/interceptor";
 import type { CaptureFilter } from "./filter";
-import { createHarLog, type HarEntry, type HarLog, headersToHar, queryParamsFromUrl } from "./har";
+import { type HarEntry, type HarLog, createHarLog, headersToHar, queryParamsFromUrl } from "./har";
 
 export interface TrafficRecorder {
 	readonly harLog: HarLog;

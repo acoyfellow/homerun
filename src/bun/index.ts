@@ -2,7 +2,7 @@ import { BrowserView, BrowserWindow, Tray, Utils } from "electrobun/bun";
 import { PROXY_PORT } from "../shared/constants";
 import { createRecorder } from "./capture/recorder";
 import { createInterceptor } from "./proxy/interceptor";
-import { createProxyServer, type ProxyServer } from "./proxy/server";
+import { type ProxyServer, createProxyServer } from "./proxy/server";
 import type { HomerunRPC } from "./types/rpc";
 
 let proxyServer: ProxyServer | null = null;
