@@ -1,5 +1,7 @@
 import { decodeFrame, encodeRequest, encodeError } from "@shared/tunnel/protocol";
-import { TunnelMessageType, TUNNEL_REQUEST_TIMEOUT } from "@shared/tunnel/types";
+import { TunnelMessageType } from "@shared/tunnel/types";
+
+const TUNNEL_REQUEST_TIMEOUT = 30_000;
 
 interface PendingRequest {
 	resolve: (response: Response) => void;
