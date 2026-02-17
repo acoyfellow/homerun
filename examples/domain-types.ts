@@ -6,10 +6,10 @@ import { Option } from "effect";
 import {
 	API_RESOURCE_TYPES,
 	CapturedEndpoint,
+	isApiRequest,
 	NetworkEvent,
 	PathStep,
 	ScoutedPath,
-	isApiRequest,
 } from "unsurf";
 
 // CapturedEndpoint — what the scout stores for each API endpoint

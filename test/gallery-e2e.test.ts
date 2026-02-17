@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import { NetworkEvent } from "../src/domain/NetworkEvent.js";
 import { Browser, makeTestBrowserWithEvents } from "../src/services/Browser.js";
 import { Gallery, makeTestGallery } from "../src/services/Gallery.js";
-import { OpenApiGenerator, makeOpenApiGenerator } from "../src/services/OpenApiGenerator.js";
-import { SchemaInferrer, makeSchemaInferrer } from "../src/services/SchemaInferrer.js";
-import { Store, makeTestStore } from "../src/services/Store.js";
+import { makeOpenApiGenerator, OpenApiGenerator } from "../src/services/OpenApiGenerator.js";
+import { makeSchemaInferrer, SchemaInferrer } from "../src/services/SchemaInferrer.js";
+import { makeTestStore, Store } from "../src/services/Store.js";
 import { scout } from "../src/tools/Scout.js";
 
 // ==================== Test Fixtures ====================

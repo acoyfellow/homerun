@@ -3,7 +3,7 @@
  * This file is embedded in the docs and tested in CI.
  */
 import { Effect, Option } from "effect";
-import { CapturedEndpoint, type GalleryEntry, Site, makeTestGallery, makeTestStore } from "unsurf";
+import { CapturedEndpoint, type GalleryEntry, makeTestGallery, makeTestStore, Site } from "unsurf";
 
 // ── 1. Set up test doubles ─────────────────────────────────────────────────
 const store = makeTestStore();

@@ -5,9 +5,9 @@
 import { Effect, Option } from "effect";
 import {
 	CapturedEndpoint,
+	makeOpenApiGenerator,
 	OpenApiGenerator,
 	OpenApiGeneratorLive,
-	makeOpenApiGenerator,
 } from "unsurf";
 
 // Create endpoints as the scout would capture them

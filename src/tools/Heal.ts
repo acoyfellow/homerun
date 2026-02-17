@@ -1,6 +1,5 @@
 import { Effect, Option, Schedule } from "effect";
-import type { BrowserError } from "../domain/Errors.js";
-import type { NotFoundError, StoreError } from "../domain/Errors.js";
+import type { BrowserError, NotFoundError, StoreError } from "../domain/Errors.js";
 import type { Browser } from "../services/Browser.js";
 import type { OpenApiGenerator } from "../services/OpenApiGenerator.js";
 import type { SchemaInferrer } from "../services/SchemaInferrer.js";

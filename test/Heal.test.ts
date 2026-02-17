@@ -4,9 +4,9 @@ import type { CapturedEndpoint } from "../src/domain/Endpoint.js";
 import { NetworkEvent } from "../src/domain/NetworkEvent.js";
 import type { ScoutedPath } from "../src/domain/Path.js";
 import { Browser, makeTestBrowserWithEvents } from "../src/services/Browser.js";
-import { OpenApiGenerator, makeOpenApiGenerator } from "../src/services/OpenApiGenerator.js";
-import { SchemaInferrer, makeSchemaInferrer } from "../src/services/SchemaInferrer.js";
-import { Store, makeTestStore } from "../src/services/Store.js";
+import { makeOpenApiGenerator, OpenApiGenerator } from "../src/services/OpenApiGenerator.js";
+import { makeSchemaInferrer, SchemaInferrer } from "../src/services/SchemaInferrer.js";
+import { makeTestStore, Store } from "../src/services/Store.js";
 import { heal } from "../src/tools/Heal.js";
 
 // ==================== Helpers ====================

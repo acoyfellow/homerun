@@ -1,6 +1,6 @@
 import { Effect, Exit } from "effect";
 import { describe, expect, it } from "vitest";
-import { Store, makeTestStore } from "../src/services/Store.js";
+import { makeTestStore, Store } from "../src/services/Store.js";
 
 const store = makeTestStore();
 const run = <A, E>(effect: Effect.Effect<A, E, never>) => Effect.runPromise(effect);

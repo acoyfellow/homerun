@@ -1,6 +1,6 @@
 import { Context, Effect, Layer, Ref, type Scope, Stream } from "effect";
 import type { BrowserError } from "../domain/Errors.js";
-import { NetworkEvent, isApiRequest } from "../domain/NetworkEvent.js";
+import { isApiRequest, NetworkEvent } from "../domain/NetworkEvent.js";
 
 // ==================== Service Interface ====================
 
@@ -34,8 +34,8 @@ export class Browser extends Context.Tag("Browser")<Browser, BrowserService>() {
 
 // ==================== Cloudflare Browser Rendering Implementation ====================
 
-import puppeteer from "@cloudflare/puppeteer";
 import type { BrowserWorker, HTTPResponse } from "@cloudflare/puppeteer";
+import puppeteer from "@cloudflare/puppeteer";
 
 type PendingRequest = {
 	url: string;

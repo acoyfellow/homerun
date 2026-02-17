@@ -1,7 +1,6 @@
 import { Effect, Option } from "effect";
 import { CapturedEndpoint } from "../domain/Endpoint.js";
-import type { BrowserError } from "../domain/Errors.js";
-import type { StoreError } from "../domain/Errors.js";
+import type { BrowserError, StoreError } from "../domain/Errors.js";
 import { ValidationError } from "../domain/Errors.js";
 import type { NetworkEvent } from "../domain/NetworkEvent.js";
 import { isApiRequest } from "../domain/NetworkEvent.js";

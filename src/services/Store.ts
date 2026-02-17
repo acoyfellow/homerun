@@ -1,7 +1,7 @@
 import { Context, Effect, Layer, Option } from "effect";
 import {
-	type Db,
 	createDb,
+	type Db,
 	getEndpointsBySite,
 	getPath,
 	getPathsBySite,

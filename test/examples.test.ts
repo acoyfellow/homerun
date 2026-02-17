@@ -1,5 +1,4 @@
-import { Effect, Option } from "effect";
-import { Layer } from "effect";
+import { Effect, Layer, Option } from "effect";
 /**
  * Examples dogfood test — verifies every example file in examples/ actually runs.
  * If any export changes or breaks, this test fails, which means the docs are wrong.
@@ -10,10 +9,19 @@ import {
 	Browser,
 	BrowserError,
 	CapturedEndpoint,
+	extractDomain,
 	GalleryEntry,
+	generateClient,
+	isApiRequest,
+	makeOpenApiGenerator,
+	makeSchemaInferrer,
+	makeTestBrowserWithEvents,
+	makeTestGallery,
+	makeTestStore,
 	NetworkError,
 	NetworkEvent,
 	NotFoundError,
+	normalizeUrlPattern,
 	OpenApiGenerator,
 	OpenApiGeneratorLive,
 	PathBrokenError,
@@ -24,15 +32,6 @@ import {
 	Site,
 	Store,
 	StoreError,
-	extractDomain,
-	generateClient,
-	isApiRequest,
-	makeOpenApiGenerator,
-	makeSchemaInferrer,
-	makeTestBrowserWithEvents,
-	makeTestGallery,
-	makeTestStore,
-	normalizeUrlPattern,
 	scout,
 } from "../src/index.js";
 

@@ -5,14 +5,14 @@
 import { Effect, Layer } from "effect";
 import {
 	Browser,
+	makeTestBrowserWithEvents,
+	makeTestStore,
 	NetworkEvent,
 	OpenApiGenerator,
 	OpenApiGeneratorLive,
 	SchemaInferrer,
 	SchemaInferrerLive,
 	Store,
-	makeTestBrowserWithEvents,
-	makeTestStore,
 	scout,
 } from "unsurf";
 

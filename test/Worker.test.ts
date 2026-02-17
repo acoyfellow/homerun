@@ -2,7 +2,7 @@ import { Effect, Exit, Layer, Option } from "effect";
 import { describe, expect, it, vi } from "vitest";
 import type { CapturedEndpoint } from "../src/domain/Endpoint.js";
 import type { ScoutedPath } from "../src/domain/Path.js";
-import { Store, makeTestStore } from "../src/services/Store.js";
+import { makeTestStore, Store } from "../src/services/Store.js";
 import { worker } from "../src/tools/Worker.js";
 
 // ==================== Helpers ====================

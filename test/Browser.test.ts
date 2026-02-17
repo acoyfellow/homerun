@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
-import { NetworkEvent, isApiRequest } from "../src/domain/NetworkEvent.js";
+import { isApiRequest, NetworkEvent } from "../src/domain/NetworkEvent.js";
 import { makeTestBrowser, makeTestBrowserWithEvents } from "../src/services/Browser.js";
 
 const run = <A, E>(effect: Effect.Effect<A, E, never>) => Effect.runPromise(effect);
