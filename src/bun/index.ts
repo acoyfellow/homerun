@@ -1,10 +1,10 @@
 import { BrowserView, BrowserWindow, Tray, Utils } from "electrobun/bun";
 import { PROXY_PORT } from "../shared/constants";
-import type { TunnelConfig, TunnelStatus } from "../shared/types";
+import type { CapturedExchange, ProxyStatus, TunnelConfig, TunnelStatus } from "../shared/types";
 import { createRecorder } from "./capture/recorder";
-import { TunnelClient } from "./tunnel/client";
 import { createInterceptor } from "./proxy/interceptor";
 import { type ProxyServer, createProxyServer } from "./proxy/server";
+import { TunnelClient } from "./tunnel/client";
 import type { HomerunRPC } from "./types/rpc";
 
 let proxyServer: ProxyServer | null = null;
@@ -24,19 +24,48 @@ const disconnectedTunnelStatus: TunnelStatus = {
 	upstream: null,
 };
 
+function stoppedProxyStatus(port = PROXY_PORT): ProxyStatus {
+	return {
+		running: false,
+		port,
+		requestCount: 0,
+		activeConnections: 0,
+		uptime: 0,
+	};
+}
+
+function normalizeProxyStartError(error: unknown, port: number): string {
+	const message = error instanceof Error ? error.message : String(error);
+	if (message.includes("EADDRINUSE")) {
+		return `Port ${port} is already in use`;
+	}
+	return message;
+}
+
+function tryStartProxy(port = PROXY_PORT): { status: ProxyStatus; error: string | null } {
+	try {
+		proxyServer = createProxyServer({ port, interceptor });
+		console.log(`[homerun] Proxy started on :${proxyServer.port}`);
+		return { status: proxyServer.status, error: null };
+	} catch (error) {
+		const message = normalizeProxyStartError(error, port);
+		proxyServer = null;
+		console.error(`[homerun] Failed to start proxy on :${port}: ${message}`);
+		return { status: stoppedProxyStatus(port), error: message };
+	}
+}
+
+function getProxyStatusSnapshot(): ProxyStatus {
+	return proxyServer?.status ?? stoppedProxyStatus();
+}
+
 const rpc = BrowserView.defineRPC<HomerunRPC>({
 	maxRequestTime: 10_000,
 	handlers: {
 		requests: {
 			getProxyStatus: () => {
 				if (!proxyServer) {
-					return {
-						running: false,
-						port: PROXY_PORT,
-						requestCount: 0,
-						activeConnections: 0,
-						uptime: 0,
-					};
+					return stoppedProxyStatus();
 				}
 				return proxyServer.status;
 			},
@@ -44,15 +73,22 @@ const rpc = BrowserView.defineRPC<HomerunRPC>({
 				if (proxyServer) {
 					return proxyServer.status;
 				}
-				proxyServer = createProxyServer({ port: port ?? PROXY_PORT, interceptor });
-				console.log(`[homerun] Proxy started on :${proxyServer.port}`);
-				return proxyServer.status;
+				const requestedPort = port ?? PROXY_PORT;
+				const result = tryStartProxy(requestedPort);
+				if (result.error) {
+					throw new Error(`Could not start proxy on port ${requestedPort}: ${result.error}`);
+				}
+				updateTrayMenu();
+				emitProxyStatusChanged();
+				return result.status;
 			},
 			stopProxy: () => {
 				if (!proxyServer) return false;
 				proxyServer.stop();
 				proxyServer = null;
 				console.log("[homerun] Proxy stopped");
+				updateTrayMenu();
+				emitProxyStatusChanged();
 				return true;
 			},
 			listSessions: () => {
@@ -81,10 +117,13 @@ const rpc = BrowserView.defineRPC<HomerunRPC>({
 					upstream,
 					relayUrl,
 				} as TunnelConfig);
-				tunnelClient.onStateChange(() => {
+				tunnelClient.onStateChange((status) => {
 					updateTrayMenu();
+					emitTunnelStatusChanged(status);
 				});
 				tunnelClient.connect();
+				updateTrayMenu();
+				emitTunnelStatusChanged(tunnelClient.status);
 				return tunnelClient.status;
 			},
 			stopTunnel: () => {
@@ -92,6 +131,8 @@ const rpc = BrowserView.defineRPC<HomerunRPC>({
 				tunnelClient.disconnect();
 				tunnelClient = null;
 				console.log("[homerun] Tunnel stopped");
+				updateTrayMenu();
+				emitTunnelStatusChanged();
 				return true;
 			},
 		},
@@ -110,6 +151,28 @@ const mainWindow = new BrowserWindow({
 	rpc,
 });
 
+function emitProxyStatusChanged() {
+	mainWindow.webview.rpc.send.proxyStatusChanged(getProxyStatusSnapshot());
+}
+
+function emitTunnelStatusChanged(status = tunnelClient?.status ?? disconnectedTunnelStatus) {
+	mainWindow.webview.rpc.send.tunnelStatusChanged(status);
+}
+
+function emitTrafficEntry(exchange: CapturedExchange) {
+	mainWindow.webview.rpc.send.trafficEntry(exchange);
+}
+
+addHook({
+	onRequest() {
+		emitProxyStatusChanged();
+	},
+	onResponse(request, response) {
+		emitTrafficEntry({ request, response });
+		emitProxyStatusChanged();
+	},
+});
+
 const tray = new Tray({
 	title: "homerun",
 	width: 22,
@@ -119,7 +182,10 @@ const tray = new Tray({
 function updateTrayMenu() {
 	const isRunning = proxyServer !== null;
 	const tunnelState = tunnelClient?.status.state ?? "disconnected";
-	const tunnelLabel = tunnelState === "connected" ? `Tunnel: ${tunnelClient?.status.tunnelId}` : `Tunnel: ${tunnelState}`;
+	const tunnelLabel =
+		tunnelState === "connected"
+			? `Tunnel: ${tunnelClient?.status.tunnelId}`
+			: `Tunnel: ${tunnelState}`;
 	tray.setMenu([
 		{
 			type: "normal",
@@ -172,9 +238,10 @@ tray.on("tray-item-clicked" as any, (e: any) => {
 				proxyServer.stop();
 				proxyServer = null;
 			} else {
-				proxyServer = createProxyServer({ port: PROXY_PORT, interceptor });
+				tryStartProxy(PROXY_PORT);
 			}
 			updateTrayMenu();
+			emitProxyStatusChanged();
 			break;
 		}
 		case "toggle-tunnel": {
@@ -185,6 +252,7 @@ tray.on("tray-item-clicked" as any, (e: any) => {
 				mainWindow.focus();
 			}
 			updateTrayMenu();
+			emitTunnelStatusChanged();
 			break;
 		}
 		case "show-dashboard": {
@@ -208,6 +276,12 @@ mainWindow.on("close", () => {
 	/* intentional no-op: app stays alive in system tray */
 });
 
-proxyServer = createProxyServer({ port: PROXY_PORT, interceptor });
-console.log(`[homerun] Started. Proxy on :${proxyServer.port}`);
+const startupProxyResult = tryStartProxy(PROXY_PORT);
+if (startupProxyResult.error) {
+	console.warn(
+		"[homerun] App started without proxy. Start it from the dashboard once the port is available.",
+	);
+}
 updateTrayMenu();
+emitProxyStatusChanged();
+emitTunnelStatusChanged();

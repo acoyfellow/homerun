@@ -21,5 +21,11 @@ export default {
 				entrypoint: "src/views/traffic/index.ts",
 			},
 		},
+		copy: {
+			"src/views/dashboard/index.html": "views/dashboard/index.html",
+			"src/views/dashboard/style.css": "views/dashboard/style.css",
+			"src/views/traffic/index.html": "views/traffic/index.html",
+			"src/views/traffic/style.css": "views/traffic/style.css",
+		},
 	},
 } satisfies ElectrobunConfig;

@@ -47,9 +47,15 @@ toggleBtn.addEventListener("click", async () => {
 		await rpc.request.stopProxy({});
 		proxyRunning = false;
 	} else {
-		const status = await rpc.request.startProxy({});
-		proxyRunning = true;
-		updateStatusUI(status.running, status.port, status.requestCount);
+		try {
+			const status = await rpc.request.startProxy({});
+			proxyRunning = status.running;
+			updateStatusUI(status.running, status.port, status.requestCount);
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Failed to start proxy";
+			alert(message);
+			proxyRunning = false;
+		}
 	}
 	updateToggleButton();
 });
@@ -89,15 +95,21 @@ copyTunnelUrlBtn.addEventListener("click", async () => {
 });
 
 async function init() {
-	const status = await rpc.request.getProxyStatus({});
-	proxyRunning = status.running;
-	updateStatusUI(status.running, status.port, status.requestCount);
-	updateToggleButton();
+	try {
+		const status = await rpc.request.getProxyStatus({});
+		proxyRunning = status.running;
+		updateStatusUI(status.running, status.port, status.requestCount);
+		updateToggleButton();
 
-	const tunnelStatus = await rpc.request.getTunnelStatus({});
-	tunnelRunning = tunnelStatus.state === "connected" || tunnelStatus.state === "connecting";
-	updateTunnelUI(tunnelStatus);
-	updateTunnelButton();
+		const tunnelStatus = await rpc.request.getTunnelStatus({});
+		tunnelRunning = tunnelStatus.state === "connected" || tunnelStatus.state === "connecting";
+		updateTunnelUI(tunnelStatus);
+		updateTunnelButton();
+	} catch (error) {
+		console.error("Failed to initialize dashboard", error);
+		updateStatusUI(false, 8080, 0);
+		updateToggleButton();
+	}
 }
 
 function updateStatusUI(running: boolean, port: number, requests: number) {
